@@ -36,6 +36,7 @@ import '../../telemetry/health_uploader.dart';
 import '../../theme/theme_controller.dart';
 import '../ui2.dart';
 import 'alarm.dart';
+import 'prayer.dart';
 import 'band_notifications.dart';
 import 'data.dart';
 import 'gallery.dart';
@@ -643,6 +644,9 @@ class MoreSettingsView extends StatelessWidget {
                 // on the Profile screen — because two doors to one form is how
                 // a user ends up unsure which one is the real setting.
                 settingsGroup(c, l?.settingsGroupTheBand ?? 'The band', [
+                  SetRow(LucideIcons.moonStar, C.indigo, 'Prayer alarms',
+                      sub: 'The band vibrates at each prayer time',
+                      onTap: () => goto(c, const PrayerScreen())),
                   SetRow(LucideIcons.alarmClock, C.orange,
                       l?.settingsAlarmRowTitle ?? 'Alarm',
                       sub: l?.settingsAlarmRowSub ??

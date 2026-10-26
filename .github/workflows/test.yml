@@ -1,9 +1,7 @@
 name: test
 
 on:
-  push:
-    branches: [main]
-  pull_request:
+  # Salah Fit: run by hand only; the APK workflow builds every push.
   workflow_dispatch:
 
 concurrency:

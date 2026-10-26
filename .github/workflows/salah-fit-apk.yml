@@ -1,0 +1,82 @@
+name: Salah Fit APK
+
+# Builds the Android app on every push to main (or by hand from the Actions
+# tab) and publishes it as the repository's latest release, so the newest
+# APK is always at /releases/latest.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: salah-fit-apk
+  cancel-in-progress: true
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.6'
+
+      # No companion backend, no OTA, no telemetry: an empty define file.
+      - name: Write .env
+        run: echo "SALAH_FIT=1" > .env
+
+      # Sign with Salah Fit's own key when the secret is set, so each new build
+      # installs over the last one and keeps your data. Without it the build
+      # still works but is debug-signed.
+      - name: Restore signing key
+        env:
+          KEYSTORE_B64: ${{ secrets.SALAHFIT_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.SALAHFIT_KEYSTORE_PASSWORD }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/salahfit.jks"
+            {
+              echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/salahfit.jks"
+              echo "ANDROID_KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD"
+              echo "ANDROID_KEY_ALIAS=salahfit"
+              echo "ANDROID_KEY_PASSWORD=$KEYSTORE_PASSWORD"
+            } >> "$GITHUB_ENV"
+          else
+            echo "::warning::No SALAHFIT_KEYSTORE_BASE64 secret — building debug-signed."
+          fi
+
+      - run: flutter pub get
+
+      - name: Build APK
+        run: flutter build apk --release --dart-define-from-file=.env --build-number=${{ github.run_number }}
+
+      - name: Rename
+        run: |
+          mkdir -p dist
+          cp build/app/outputs/flutter-apk/app-release.apk dist/salah-fit.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: salah-fit-apk
+          path: dist/salah-fit.apk
+
+      - name: Publish as latest release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: salah-fit-build-${{ github.run_number }}
+          name: Salah Fit (build ${{ github.run_number }})
+          body: |
+            Built from ${{ github.sha }}.
+            Download **salah-fit.apk** below on your phone and install it.
+          files: dist/salah-fit.apk
+          make_latest: true

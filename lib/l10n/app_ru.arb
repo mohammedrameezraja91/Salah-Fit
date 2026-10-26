@@ -1,6 +1,6 @@
 {
   "@@locale": "ru",
-  "appTitle": "OpenStrap",
+  "appTitle": "Salah Fit",
   "profileTitle": "Профиль",
   "profileMyDevices": "Мои устройства",
   "profileLanguage": "Язык",
@@ -1971,7 +1971,7 @@
   "coachNoDataTitle": "Пока нет данных для чтения",
   "coachNoModelsListed": "Сервис не предоставил список моделей. Введите название ниже.",
   "coachNotSetUp": "Не настроено",
-  "coachNotSetUpBody": "Выберите модель на своём компьютере или любого совместимого с OpenAI провайдера со своим ключом. Данные в любом случае не проходят через OpenStrap.",
+  "coachNotSetUpBody": "Выберите модель на своём компьютере или любого совместимого с OpenAI провайдера со своим ключом. Данные в любом случае не проходят через Salah Fit.",
   "coachNotSetUpTitle": "Тренер не настроен",
   "coachPastChats": "ПРОШЛЫЕ ЧАТЫ",
   "coachPickModelFirst": "Сначала выберите или укажите модель.",
@@ -4327,7 +4327,7 @@
       }
     }
   },
-  "workoutDeleteBodyOwn": "Тренировка исчезнет из OpenStrap. Копия в {storeName}, если она есть, останется.",
+  "workoutDeleteBodyOwn": "Тренировка исчезнет из Salah Fit. Копия в {storeName}, если она есть, останется.",
   "@workoutDeleteBodyOwn": {
     "placeholders": {
       "storeName": {
@@ -4335,7 +4335,7 @@
       }
     }
   },
-  "workoutDeleteBodyImported": "Тренировка исчезнет из OpenStrap и не будет импортирована снова. Оригинал в {storeName} останется.",
+  "workoutDeleteBodyImported": "Тренировка исчезнет из Salah Fit и не будет импортирована снова. Оригинал в {storeName} останется.",
   "@workoutDeleteBodyImported": {
     "placeholders": {
       "storeName": {
@@ -5517,8 +5517,8 @@
   "settingsCopied": "Скопировано",
   "settingsCopyTheToken": "Скопировать токен",
   "bandStatusBluetoothDeniedTitle": "Bluetooth запрещён для приложения",
-  "bandStatusBluetoothDeniedReason": "Телефон не даёт OpenStrap использовать Bluetooth, поэтому подключиться нельзя. Разрешите Bluetooth для OpenStrap в настройках телефона.",
-  "bandStatusBluetoothDeniedFix": "Откройте «Настройки → OpenStrap» и разрешите Bluetooth",
+  "bandStatusBluetoothDeniedReason": "Телефон не даёт Salah Fit использовать Bluetooth, поэтому подключиться нельзя. Разрешите Bluetooth для Salah Fit в настройках телефона.",
+  "bandStatusBluetoothDeniedFix": "Откройте «Настройки → Salah Fit» и разрешите Bluetooth",
   "bandStatusBluetoothOffTitle": "Bluetooth выключен",
   "bandStatusBluetoothOffReason": "Bluetooth телефона выключен, поэтому ни одно приложение не может связаться с браслетом. Он продолжает запись, данные не теряются.",
   "bandStatusBluetoothOffFix": "Включить Bluetooth",
@@ -7126,7 +7126,7 @@
       }
     }
   },
-  "iosUninstallUnpairsWarning": "На iOS удаление OpenStrap также снимает с телефона сопряжение всех браслетов и датчиков, сопряжённых здесь, поэтому другие приложения, включая приложение производителя, тоже их теряют.",
+  "iosUninstallUnpairsWarning": "На iOS удаление Salah Fit также снимает с телефона сопряжение всех браслетов и датчиков, сопряжённых здесь, поэтому другие приложения, включая приложение производителя, тоже их теряют.",
   "logFoodEditTitle": "Изменить запись",
   "logFoodDateLabel": "Дата",
   "logFoodTimeLabel": "Время",

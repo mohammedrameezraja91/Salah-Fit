@@ -57,7 +57,9 @@ class ThemeController extends ChangeNotifier {
   static AppThemeChoice _parse(String? s) => switch (s) {
         'light' => AppThemeChoice.light,
         'dark' => AppThemeChoice.dark,
-        _ => AppThemeChoice.system,
+        'system' => AppThemeChoice.system,
+        // Salah Fit: midnight blue is the look, so a fresh install starts dark.
+        _ => AppThemeChoice.dark,
       };
 
   AppThemeChoice get choice => _choice;

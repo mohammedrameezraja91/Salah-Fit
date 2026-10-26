@@ -66,6 +66,7 @@ import '../activity/day_strain.dart' show DayStrainDetail;
 import '../profile/alarm.dart'
     show AlarmArmState, alarmArmOf, alarmDoor, alarmGlanceCard;
 import '../profile/devices.dart' show formatDayTime;
+import '../profile/prayer.dart' show prayerDoor;
 import '../profile/profile.dart';
 import '../profile/wearable_numbers.dart'
     show WearableCells, kHomeWearableRows;
@@ -1788,6 +1789,10 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
             const SizedBox(height: S.x3),
             alarmDoor(c, a.$1, a.$2),
           ],
+        if (_day == null || _day == todayLabel()) ...[
+          const SizedBox(height: S.x3),
+          prayerDoor(c),
+        ],
       ]));
     }
 
@@ -2034,6 +2039,11 @@ class _HomeScreenState extends State<HomeScreen> with RevisionReload {
           const SizedBox(height: S.x3),
           alarmDoor(c, a.$1, a.$2),
         ],
+      // Salah Fit: the next prayer, on every today.
+      if (isToday) ...[
+        const SizedBox(height: S.x3),
+        prayerDoor(c),
+      ],
       // The coach, set up or not, on every ordinary or bare today.
       if (isToday) ...[
         const SizedBox(height: S.x4),

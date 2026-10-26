@@ -4348,6 +4348,16 @@ class AppState extends ChangeNotifier {
     if (isConnected) await _armNextAlarmOccurrence();
   }
 
+  /// Salah Fit: re-arm the band after the prayer-alarm settings change, so a
+  /// new city or a prayer switched on/off reaches the band straight away
+  /// instead of at the next sync. Returns false when the band isn't connected.
+  Future<bool> rearmPrayerAlarms() async {
+    if (!isConnected) return false;
+    await _armNextAlarmOccurrence();
+    notifyListeners();
+    return true;
+  }
+
   /// Compute + arm the next scheduled occurrence, skipping the write when it
   /// already matches what's armed (don't hammer the strap on every sync).
   /// Called after every successful connect and after each sync completes —

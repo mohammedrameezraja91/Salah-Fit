@@ -9,6 +9,7 @@
 
 import '../ble/ble_engine.dart';
 import '../ble/ble_state.dart' show AlarmConfirmation;
+import '../prayer/prayer_settings.dart';
 
 /// One weekday's slot in the schedule. Immutable — callers build a new one to
 /// change a field.
@@ -115,6 +116,12 @@ bool inSmartWakeWindow({
         AlarmScheduleEntry(weekday: 0, hour: 0, minute: 0, enabled: false),
   );
   if (entry.smartWindowMinutes <= 0) return null;
+  // Salah Fit: the band's one alarm may be holding a PRAYER time instead of
+  // the wake time. Smart wake belongs to the wake alarm only, so a prayer
+  // that happens to land on a smart-wake weekday must not get an early buzz.
+  if (entry.hour != windowEnd.hour || entry.minute != windowEnd.minute) {
+    return null;
+  }
   return (windowEnd: windowEnd, minutes: entry.smartWindowMinutes);
 }
 
@@ -213,7 +220,17 @@ Future<AlarmArmResult> armNextScheduledOccurrence({
   required int? currentArmedEpoch,
   DateTime? now,
 }) async {
-  final next = nextAlarmOccurrence(schedule, now ?? DateTime.now());
+  final from = now ?? DateTime.now();
+  var next = nextAlarmOccurrence(schedule, from);
+  // Salah Fit: arm whichever comes first, the wake alarm or the next enabled
+  // prayer. After it fires, the usual re-arm path lands here again and picks
+  // the one after it, so all five prayers chain through the single slot.
+  try {
+    final prayer = (await PrayerSettings.load()).nextPrayerAfter(from);
+    if (prayer != null && (next == null || prayer.at.isBefore(next))) {
+      next = prayer.at;
+    }
+  } catch (_) {/* prayer prefs unreadable — the wake alarm still arms */}
   if (next == null) {
     // Nothing enabled. Toggling every weekday off individually (rather than
     // an explicit cancel-all) must not leave the strap holding its last arm

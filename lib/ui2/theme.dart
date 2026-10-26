@@ -35,8 +35,10 @@ import 'package:flutter/material.dart';
 /// [P.fill] (accent as a filled surface under [P.inkOnFill]) first.
 class C {
   // primary
-  static const green = Color(0xFF22C55E);
-  static const greenD = Color(0xFF16A34A);
+  // Salah Fit: the brand accent is a calm azure on midnight blue, replacing
+  // OpenStrap's green. The name stays `green` so every call site follows.
+  static const green = Color(0xFF4C8DFF);
+  static const greenD = Color(0xFF2563EB);
   static const blue = Color(0xFF3B82F6);
   static const purple = Color(0xFF8B5CF6);
 
@@ -135,11 +137,11 @@ class P {
 
   static P of(BuildContext c) => P(Theme.of(c).brightness == Brightness.dark);
 
-  Color get bg => dark ? const Color(0xFF0B1017) : C.n50;
-  Color get card => dark ? const Color(0xFF151C26) : C.white;
-  Color get card2 => dark ? const Color(0xFF1D2632) : C.n100;
-  Color get line => dark ? const Color(0xFF232D3B) : C.n200;
-  Color get track => dark ? const Color(0xFF232D3B) : C.n200;
+  Color get bg => dark ? const Color(0xFF070F24) : const Color(0xFFF3F6FC);
+  Color get card => dark ? const Color(0xFF0F1A36) : C.white;
+  Color get card2 => dark ? const Color(0xFF172447) : const Color(0xFFE8EEF8);
+  Color get line => dark ? const Color(0xFF22305A) : C.n200;
+  Color get track => dark ? const Color(0xFF22305A) : C.n200;
 
   Color get ink => dark ? const Color(0xFFF1F5F9) : C.n900;
   Color get ink2 => dark ? const Color(0xFF94A3B8) : C.n600;
@@ -148,7 +150,7 @@ class P {
   /// (light theme) / lightest (dark theme) surface it can sit on — so it is
   /// legible on every surface, not just the one it was eyeballed against.
   /// The values it replaces measured 4.34:1 and 3.21:1 respectively.
-  Color get ink3 => dark ? const Color(0xFF7F8DA0) : const Color(0xFF627188);
+  Color get ink3 => dark ? const Color(0xFF8C9BB8) : const Color(0xFF5B6A85);
 
   /// The ink that goes on top of a [fill]. White by construction — [fill]
   /// darkens the accent until white clears AA on it.
