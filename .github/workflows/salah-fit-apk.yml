@@ -35,16 +35,18 @@ jobs:
       - name: Write .env
         run: echo "SALAH_FIT=1" > .env
 
-      # Sign with Salah Fit's own key when the secret is set, so each new build
-      # installs over the last one and keeps your data. Without it the build
-      # still works but is debug-signed.
+      # Sign with Salah Fit's own key so each new build installs over the last
+      # one and keeps your data. The key is committed ENCRYPTED
+      # (android/salahfit.jks.enc); only the SALAHFIT_KEYSTORE_PASSWORD secret
+      # unlocks it. Without the secret the build still works, debug-signed.
       - name: Restore signing key
         env:
-          KEYSTORE_B64: ${{ secrets.SALAHFIT_KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.SALAHFIT_KEYSTORE_PASSWORD }}
         run: |
-          if [ -n "$KEYSTORE_B64" ]; then
-            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/salahfit.jks"
+          if [ -n "$KEYSTORE_PASSWORD" ]; then
+            openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 \
+              -in android/salahfit.jks.enc -out "$RUNNER_TEMP/salahfit.jks" \
+              -pass env:KEYSTORE_PASSWORD
             {
               echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/salahfit.jks"
               echo "ANDROID_KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD"
@@ -52,7 +54,7 @@ jobs:
               echo "ANDROID_KEY_PASSWORD=$KEYSTORE_PASSWORD"
             } >> "$GITHUB_ENV"
           else
-            echo "::warning::No SALAHFIT_KEYSTORE_BASE64 secret — building debug-signed."
+            echo "::warning::No SALAHFIT_KEYSTORE_PASSWORD secret, building debug-signed."
           fi
 
       - run: flutter pub get
