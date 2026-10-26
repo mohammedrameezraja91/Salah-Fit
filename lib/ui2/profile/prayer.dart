@@ -7,15 +7,12 @@
 // asks AppState to re-arm.
 
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 
-import '../../gps/gps_source.dart';
 import '../../prayer/prayer_settings.dart';
 import '../../prayer/prayer_times.dart';
 import '../../state/app_state.dart';
-import '../screens/home_screen.dart' show go;
 import '../screens/metric_detail.dart' show detailLinkRow;
 import '../ui2.dart';
 import 'profile.dart' show SetRow, settingsGroup;
@@ -34,9 +31,16 @@ class _PrayerScreenState extends State<PrayerScreen> {
   @override
   void initState() {
     super.initState();
-    PrayerSettings.load().then((s) {
-      if (mounted) setState(() => _s = s);
-    });
+    _init();
+  }
+
+  Future<void> _init() async {
+    final s = await PrayerSettings.load();
+    if (!mounted) return;
+    setState(() => _s = s);
+    // Automatic location: may ask for permission the first time.
+    final moved = await PrayerSettings.refreshAuto(ask: true);
+    if (moved != null && mounted) await _update(moved);
   }
 
   Future<void> _update(PrayerSettings next) async {
@@ -53,25 +57,19 @@ class _PrayerScreenState extends State<PrayerScreen> {
         : 'Saved. The band will be updated the next time it connects.');
   }
 
-  Future<void> _useMyLocation() async {
+  Future<void> _useAutomatic() async {
     final s = _s;
     if (s == null) return;
-    final perm = await GpsSource.ensurePermission();
-    if (perm != GpsPermissionStatus.granted) {
-      if (mounted) {
-        setState(() => _note = 'Location permission is needed for this.');
-      }
-      return;
-    }
-    try {
-      final pos = await Geolocator.getCurrentPosition(
-        locationSettings:
-            const LocationSettings(accuracy: LocationAccuracy.low),
-      );
-      await _update(s.copyWith(
-          cityName: 'My location', lat: pos.latitude, lng: pos.longitude));
-    } catch (_) {
-      if (mounted) setState(() => _note = 'Could not get your location.');
+    await s.copyWith(auto: true).save();
+    final moved = await PrayerSettings.refreshAuto(ask: true);
+    if (!mounted) return;
+    if (moved != null) {
+      await _update(moved);
+    } else {
+      setState(() {
+        _s = s.copyWith(auto: true);
+        _note = 'Turn on location permission so prayer times follow you.';
+      });
     }
   }
 
@@ -157,20 +155,24 @@ class _PrayerScreenState extends State<PrayerScreen> {
                             chevron: false),
                       ]),
                       settingsGroup(c, 'Location', [
+                        SetRow(LucideIcons.mapPin, C.blue, 'Automatic',
+                            sub: s.auto
+                                ? 'Follows your phone · now ${s.cityName}'
+                                : 'Follow your phone\'s location',
+                            value: s.auto ? 'Selected' : '',
+                            chevron: false,
+                            onTap: _useAutomatic),
                         for (final city in kPrayerCities)
                           SetRow(LucideIcons.mapPin, C.blue, city.name,
-                              value: s.cityName == city.name ? 'Selected' : '',
+                              value: !s.auto && s.cityName == city.name
+                                  ? 'Selected'
+                                  : '',
                               chevron: false,
                               onTap: () => _update(s.copyWith(
+                                  auto: false,
                                   cityName: city.name,
                                   lat: city.lat,
                                   lng: city.lng))),
-                        SetRow(LucideIcons.mapPin, C.blue,
-                            'Use my location',
-                            value:
-                                s.cityName == 'My location' ? 'Selected' : '',
-                            chevron: false,
-                            onTap: _useMyLocation),
                       ]),
                       settingsGroup(c, 'Calculation', [
                         SetRow(LucideIcons.sun, C.yellow, 'Asr method',
@@ -193,22 +195,50 @@ class _PrayerScreenState extends State<PrayerScreen> {
 }
 
 /// Home's door onto prayer alarms: the next prayer and its time, or an
-/// invitation to set them up. Reads the saved settings each build, so a change
-/// made on the prayer screen shows as soon as the user comes back.
-Widget prayerDoor(BuildContext c) {
-  return FutureBuilder<PrayerSettings>(
-    future: PrayerSettings.load(),
-    builder: (c, snap) {
-      final s = snap.data;
-      if (s == null) return const SizedBox.shrink();
-      final next = s.nextPrayerAfter(DateTime.now());
-      final sub = next == null
-          ? 'Set up prayer alarms on the band'
-          : '${next.prayer.label} at ${_clock(next.at)} · ${s.cityName}';
-      return detailLinkRow(c, LucideIcons.moonStar, 'Next prayer', sub,
-          () => go(c, const PrayerScreen()));
-    },
-  );
+/// invitation to set them up. Also the quiet place automatic location gets
+/// refreshed (no permission prompt here, at most every few hours), so prayer
+/// times follow the user when they travel.
+Widget prayerDoor(BuildContext c) => const _PrayerDoor();
+
+class _PrayerDoor extends StatefulWidget {
+  const _PrayerDoor();
+
+  @override
+  State<_PrayerDoor> createState() => _PrayerDoorState();
+}
+
+class _PrayerDoorState extends State<_PrayerDoor> {
+  PrayerSettings? _s;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final s = await PrayerSettings.load();
+    if (!mounted) return;
+    setState(() => _s = s);
+    final moved = await PrayerSettings.refreshAuto();
+    if (moved == null || !mounted) return;
+    setState(() => _s = moved);
+    await context.read<AppState>().rearmPrayerAlarms();
+  }
+
+  @override
+  Widget build(BuildContext c) {
+    final s = _s;
+    if (s == null) return const SizedBox.shrink();
+    final next = s.nextPrayerAfter(DateTime.now());
+    final sub = next == null
+        ? 'Set up prayer alarms on the band'
+        : '${next.prayer.label} at ${_clock(next.at)} · ${s.cityName}';
+    return detailLinkRow(c, LucideIcons.moonStar, 'Next prayer', sub, () async {
+      await Navigator.of(c).push(MaterialPageRoute(builder: (_) => const PrayerScreen()));
+      if (mounted) _load();
+    });
+  }
 }
 
 String _clock(DateTime t) {

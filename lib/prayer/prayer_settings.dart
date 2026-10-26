@@ -7,7 +7,12 @@
 // prayer and arms whichever comes first: that or the wake alarm. When the
 // band fires, the normal re-arm path picks the following prayer.
 
+import 'dart:math' as math;
+
+import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../gps/gps_source.dart';
 
 import 'prayer_times.dart';
 
@@ -24,6 +29,9 @@ const kPrayerCities = <PrayerCity>[
 
 class PrayerSettings {
   final bool enabled;
+
+  /// Follow the phone's location (default) instead of a fixed city.
+  final bool auto;
   final Set<Prayer> prayers;
   final String cityName;
   final double lat, lng;
@@ -33,6 +41,7 @@ class PrayerSettings {
 
   const PrayerSettings({
     required this.enabled,
+    required this.auto,
     required this.prayers,
     required this.cityName,
     required this.lat,
@@ -46,6 +55,8 @@ class PrayerSettings {
   static const _kLat = 'salahfit_prayer_lat';
   static const _kLng = 'salahfit_prayer_lng';
   static const _kAsr = 'salahfit_prayer_asr';
+  static const _kAuto = 'salahfit_prayer_auto';
+  static const _kChecked = 'salahfit_prayer_loc_checked_ms';
 
   static Future<PrayerSettings> load() async {
     final prefs = await SharedPreferences.getInstance();
@@ -56,6 +67,7 @@ class PrayerSettings {
     final def = kPrayerCities.first;
     return PrayerSettings(
       enabled: prefs.getBool(_kEnabled) ?? false,
+      auto: prefs.getBool(_kAuto) ?? true,
       prayers: names == null
           ? Prayer.values.toSet()
           : {
@@ -72,6 +84,7 @@ class PrayerSettings {
   Future<void> save() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_kEnabled, enabled);
+    await prefs.setBool(_kAuto, auto);
     await prefs.setStringList(_kPrayers, [for (final p in prayers) p.name]);
     await prefs.setString(_kCity, cityName);
     await prefs.setDouble(_kLat, lat);
@@ -81,6 +94,7 @@ class PrayerSettings {
 
   PrayerSettings copyWith({
     bool? enabled,
+    bool? auto,
     Set<Prayer>? prayers,
     String? cityName,
     double? lat,
@@ -89,6 +103,7 @@ class PrayerSettings {
   }) =>
       PrayerSettings(
         enabled: enabled ?? this.enabled,
+        auto: auto ?? this.auto,
         prayers: prayers ?? this.prayers,
         cityName: cityName ?? this.cityName,
         lat: lat ?? this.lat,
@@ -125,5 +140,77 @@ class PrayerSettings {
       if (day.of(p).difference(at).inSeconds.abs() < 60) return p;
     }
     return null;
+  }
+
+  /// Automatic location: when [auto] is on, read where the phone is and, if
+  /// it moved more than a few km since the last fix, save the new place and
+  /// return the updated settings (null = nothing changed, or auto is off).
+  ///
+  /// [ask] may show the location permission prompt (only from the prayer
+  /// screen); without it this only uses a permission already granted, and
+  /// checks at most every 3 hours so the Today screen stays cheap.
+  static Future<PrayerSettings?> refreshAuto({bool ask = false}) async {
+    final s = await load();
+    if (!s.auto) return null;
+    final prefs = await SharedPreferences.getInstance();
+    final nowMs = DateTime.now().millisecondsSinceEpoch;
+    if (!ask && nowMs - (prefs.getInt(_kChecked) ?? 0) < 3 * 3600 * 1000) {
+      return null;
+    }
+    try {
+      if (ask) {
+        if (await GpsSource.ensurePermission() != GpsPermissionStatus.granted) {
+          return null;
+        }
+      } else {
+        final perm = await Geolocator.checkPermission();
+        if (perm != LocationPermission.always &&
+            perm != LocationPermission.whileInUse) {
+          return null;
+        }
+      }
+      Position? pos;
+      try {
+        pos = await Geolocator.getCurrentPosition(
+          locationSettings: const LocationSettings(
+              accuracy: LocationAccuracy.low,
+              timeLimit: Duration(seconds: 20)),
+        );
+      } catch (_) {
+        pos = await Geolocator.getLastKnownPosition();
+      }
+      if (pos == null) return null;
+      // Never located before: always take the first real fix.
+      final first = (prefs.getInt(_kChecked) ?? 0) == 0;
+      await prefs.setInt(_kChecked, nowMs);
+      if (!first && _km(s.lat, s.lng, pos.latitude, pos.longitude) < 5) {
+        return null;
+      }
+      final next = s.copyWith(
+          cityName: _placeName(pos.latitude, pos.longitude),
+          lat: pos.latitude,
+          lng: pos.longitude);
+      await next.save();
+      return next;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// A known city's name when within 30 km of it, else a generic label.
+  static String _placeName(double lat, double lng) {
+    for (final c in kPrayerCities) {
+      if (_km(lat, lng, c.lat, c.lng) < 30) return c.name;
+    }
+    return 'Current location';
+  }
+
+  static double _km(double lat1, double lng1, double lat2, double lng2) {
+    const r = 6371.0;
+    double rad(double d) => d * math.pi / 180;
+    final dLat = rad(lat2 - lat1), dLng = rad(lng2 - lng1);
+    final a = math.pow(math.sin(dLat / 2), 2) +
+        math.cos(rad(lat1)) * math.cos(rad(lat2)) * math.pow(math.sin(dLng / 2), 2);
+    return 2 * r * math.asin(math.sqrt(a));
   }
 }
