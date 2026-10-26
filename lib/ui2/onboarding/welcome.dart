@@ -575,65 +575,47 @@ class WelcomeView extends StatelessWidget {
     final p = P.of(c);
     final l = AppLocalizations.of(c);
     final o = outcome;
+    // Salah Fit: one calm screen. Icon, name, one line, one button. Import
+    // still works from Settings → Data; a result from it still shows here.
     return Scaffold(
       backgroundColor: p.bg,
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(S.x4, S.x8, S.x4, S.x8),
-          children: [
-            Icon(LucideIcons.activity, size: 40, color: p.on(C.green)),
-            const SizedBox(height: S.x5),
-            Text(l?.welcomeHeadline ?? 'Your band, decoded here',
-                style: F.display.copyWith(color: p.ink)),
-            const SizedBox(height: S.x3),
-            Text(
-              l?.welcomeSubhead ??
-                  'Every number is computed on this phone from the raw signal.',
-              style: F.body.copyWith(color: p.ink2),
-            ),
-            const SizedBox(height: S.x6),
-            Pill(l?.pillLocalNoCloud ?? 'Local · no cloud', C.green,
-                icon: LucideIcons.shieldCheck),
-            const SizedBox(height: S.x8),
-            BigButton(l?.welcomeSetUpMyBand ?? 'Set up my band',
-                icon: LucideIcons.bluetooth,
-                color: C.green,
-                onTap: busy ? null : onNew),
-            const SizedBox(height: S.x3),
-            // One primary path. Importing first is a real choice but a rarer
-            // one, so it is a text link rather than a second button of equal
-            // weight beside "Set up my band".
-            Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton.icon(
-                onPressed: busy ? null : onImport,
-                icon: const Icon(LucideIcons.upload, size: 16),
-                label: Text(busy
-                    ? (l?.welcomeImporting ?? 'Importing…')
-                    : (l?.welcomeBringMyHistoryFirst ??
-                        'Bring my history first')),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(S.x6, S.x6, S.x6, S.x6),
+          child: Column(children: [
+            Expanded(
+              child: Center(
+                child: SingleChildScrollView(
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(26),
+                      child: Image.asset('assets/images/salahfit_icon.png',
+                          width: 96, height: 96),
+                    ),
+                    const SizedBox(height: S.x5),
+                    Text('Salah Fit', style: F.display.copyWith(color: p.ink)),
+                    const SizedBox(height: S.x2),
+                    Text('Sleep well. Pray on time.',
+                        style: F.body.copyWith(color: p.ink2)),
+                    if (busy) ...[
+                      const SizedBox(height: S.x6),
+                      CircularProgressIndicator(color: p.on(C.green)),
+                    ],
+                    if (o != null) ...[
+                      const SizedBox(height: S.x6),
+                      ImportReport(o),
+                    ],
+                  ]),
+                ),
               ),
             ),
-            Text(
-              // Was: "imported days are marked as imported — they are never
-              // mixed into days this app measured itself". There is no source
-              // column on day_result or metric_series, two of the four
-              // importers write no marker at all, and imported values do feed
-              // the same rolling baselines. What IS true is the half that
-              // protects data: no import overwrites a day this band measured.
-              l?.welcomeImportFooterNote ??
-                  'A sensor export, an OpenStrap backup or a vendor CSV. Imported days count toward your usual range, and never overwrite a day the band measured.',
-              style: F.cap.copyWith(color: p.ink3),
-            ),
-            if (busy) ...[
-              const SizedBox(height: S.x6),
-              Center(child: CircularProgressIndicator(color: p.on(C.blue))),
-            ],
-            if (o != null) ...[
-              const SizedBox(height: S.x6),
-              ImportReport(o),
-            ],
-          ],
+            BigButton(l?.welcomeSetUpMyBand ?? 'Connect my band',
+                color: C.green, onTap: busy ? null : onNew),
+            const SizedBox(height: S.x3),
+            Text('Keep the band charged and close to your phone',
+                textAlign: TextAlign.center,
+                style: F.cap.copyWith(color: p.ink3)),
+          ]),
         ),
       ),
     );

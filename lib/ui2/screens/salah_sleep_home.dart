@@ -10,9 +10,11 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:provider/provider.dart';
 
 import '../../prayer/prayer_settings.dart';
 import '../../prayer/prayer_times.dart';
+import '../../state/app_state.dart';
 import '../profile/prayer.dart' show prayerDoor;
 import '../profile/profile.dart' show ProfileAvatar;
 import '../revision.dart';
@@ -135,6 +137,10 @@ class _SalahSleepHomeState extends State<SalahSleepHome> with RevisionReload {
   // ── pieces ────────────────────────────────────────────────────────────────
 
   Widget _header(BuildContext c, P p) {
+    // The name typed on the About you screen (or edited in Profile).
+    final name = c
+        .select<AppState, String?>((a) => a.user?['name'] as String?)
+        ?.trim();
     final now = DateTime.now();
     final h = _hijri(now);
     final date =
@@ -142,7 +148,11 @@ class _SalahSleepHomeState extends State<SalahSleepHome> with RevisionReload {
     return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Expanded(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('Assalamu alaikum', style: F.t1.copyWith(color: p.ink)),
+          Text(
+              (name == null || name.isEmpty)
+                  ? 'Asalamualaikum'
+                  : 'Asalamualaikum $name',
+              style: F.t1.copyWith(color: p.ink)),
           const SizedBox(height: S.x1),
           Text(date, style: F.cap.copyWith(color: p.ink2)),
         ]),

@@ -1398,7 +1398,7 @@
   "@welcomeSubhead": {
     "description": "Welcome screen subhead."
   },
-  "welcomeSetUpMyBand": "Set up my band",
+  "welcomeSetUpMyBand": "Connect my band",
   "@welcomeSetUpMyBand": {
     "description": "Button label."
   },
