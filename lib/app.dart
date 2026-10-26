@@ -17,6 +17,8 @@ import 'telemetry/telemetry_service.dart';
 import 'theme/theme_controller.dart';
 import 'theme/theme_switcher.dart';
 import 'widget/widget_service.dart';
+import 'ui2/profile/prayer.dart' show PrayerScreen;
+import 'ui2/screens/salah_sleep_home.dart';
 import 'ui2/activity/catalogue.dart';
 import 'ui2/activity/live.dart';
 import 'ui2/onboarding/pairing.dart' show OnboardingBypass;
@@ -598,8 +600,8 @@ class _ShellState extends State<_Shell> {
         Prefs.setInt(Prefs.shellTabV2, d.index);
       },
       builder: (c, d) => switch (d) {
-        ShellDomain.today => const HomeScreen(),
-        ShellDomain.sleep => const SleepTab(),
+        ShellDomain.today => const SalahSleepHome(),
+        ShellDomain.sleep => const PrayerScreen(inTab: true),
         ShellDomain.activity => const WorkoutScreen(),
         ShellDomain.health => const HealthScreen(),
       },

@@ -18,7 +18,9 @@ import '../ui2.dart';
 import 'profile.dart' show SetRow, settingsGroup;
 
 class PrayerScreen extends StatefulWidget {
-  const PrayerScreen({super.key});
+  /// Shown as the Salah tab: no back arrow, since there's nowhere to go back.
+  final bool inTab;
+  const PrayerScreen({super.key, this.inTab = false});
 
   @override
   State<PrayerScreen> createState() => _PrayerScreenState();
@@ -90,10 +92,25 @@ class _PrayerScreenState extends State<PrayerScreen> {
       backgroundColor: p.bg,
       body: SafeArea(
         child: Column(children: [
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: S.x4),
-            child: NavBar('Prayer alarms',
-                sub: 'The band vibrates at each prayer time'),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: S.x4),
+            child: widget.inTab
+                ? Padding(
+                    padding: const EdgeInsets.only(top: S.x3, bottom: S.x3),
+                    child: Row(children: [
+                      Expanded(
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Salah', style: F.t1.copyWith(color: p.ink)),
+                              Text('The band vibrates at each prayer time',
+                                  style: F.cap.copyWith(color: p.ink2)),
+                            ]),
+                      ),
+                    ]),
+                  )
+                : const NavBar('Prayer alarms',
+                    sub: 'The band vibrates at each prayer time'),
           ),
           Expanded(
             child: s == null || day == null

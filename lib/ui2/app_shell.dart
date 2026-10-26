@@ -19,11 +19,15 @@ import 'grammar.dart';
 import 'theme.dart';
 
 /// The four primary destinations, in bar order.
+// Salah Fit: Sleep · Health · Activity · Salah. The enum names stay (deep
+// links and notifications route by them); `today` is now the sleep-first
+// home and `sleep` is the Salah tab. The old Today and Sleep screens are
+// pushed from the sleep home ("Full day overview", "Sleep details").
 enum ShellDomain {
-  today('Today', LucideIcons.house, C.domHome),
-  sleep('Sleep', LucideIcons.moon, C.domSleep),
+  today('Sleep', LucideIcons.moon, C.domHome),
+  health('Health', LucideIcons.heartPulse, C.domHealth),
   activity('Activity', LucideIcons.dumbbell, C.domMove),
-  health('Health', LucideIcons.heartPulse, C.domHealth);
+  sleep('Salah', LucideIcons.moonStar, C.domSleep);
 
   const ShellDomain(this.label, this.icon, this.accent);
 
@@ -35,8 +39,8 @@ enum ShellDomain {
   String title(BuildContext c) {
     final l = AppLocalizations.of(c);
     return switch (this) {
-          ShellDomain.today => l?.tabToday,
-          ShellDomain.sleep => l?.tabSleep,
+          ShellDomain.today => l?.tabSleep,
+          ShellDomain.sleep => null, // 'Salah' is the same in every language
           ShellDomain.activity => l?.tabActivity,
           ShellDomain.health => l?.tabHealth,
         } ??
