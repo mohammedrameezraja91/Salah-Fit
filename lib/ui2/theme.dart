@@ -35,10 +35,10 @@ import 'package:flutter/material.dart';
 /// [P.fill] (accent as a filled surface under [P.inkOnFill]) first.
 class C {
   // primary
-  // Salah Fit: the brand accent is a calm azure on midnight blue, replacing
+  // Salah Fit: the brand accent is midnight blue on white, replacing
   // OpenStrap's green. The name stays `green` so every call site follows.
-  static const green = Color(0xFF4C8DFF);
-  static const greenD = Color(0xFF2563EB);
+  static const green = Color(0xFF1E3A8A);
+  static const greenD = Color(0xFF172554);
   static const blue = Color(0xFF3B82F6);
   static const purple = Color(0xFF8B5CF6);
 
@@ -137,9 +137,9 @@ class P {
 
   static P of(BuildContext c) => P(Theme.of(c).brightness == Brightness.dark);
 
-  Color get bg => dark ? const Color(0xFF070F24) : const Color(0xFFF3F6FC);
-  Color get card => dark ? const Color(0xFF0F1A36) : C.white;
-  Color get card2 => dark ? const Color(0xFF172447) : const Color(0xFFE8EEF8);
+  Color get bg => dark ? const Color(0xFF070F24) : C.white;
+  Color get card => dark ? const Color(0xFF0F1A36) : const Color(0xFFF5F8FD);
+  Color get card2 => dark ? const Color(0xFF172447) : const Color(0xFFEAF0FA);
   Color get line => dark ? const Color(0xFF22305A) : C.n200;
   Color get track => dark ? const Color(0xFF22305A) : C.n200;
 

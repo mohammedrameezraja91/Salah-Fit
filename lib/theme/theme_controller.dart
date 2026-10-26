@@ -58,8 +58,9 @@ class ThemeController extends ChangeNotifier {
         'light' => AppThemeChoice.light,
         'dark' => AppThemeChoice.dark,
         'system' => AppThemeChoice.system,
-        // Salah Fit: midnight blue is the look, so a fresh install starts dark.
-        _ => AppThemeChoice.dark,
+        // Salah Fit: white background with midnight blue, so a fresh install
+        // starts light (dark mode is still available in Settings).
+        _ => AppThemeChoice.light,
       };
 
   AppThemeChoice get choice => _choice;
