@@ -48,7 +48,12 @@ class NapsData {
     this.note,
     this.judged = false,
     this.rejected = const [],
+    this.hr = const [],
   });
+
+  /// The day's heart-rate curve, (epoch seconds, bpm), about one a minute.
+  /// Read only to show how far the heart rate fell during a nap.
+  final List<(int, num)> hr;
 
   final String? day;
   final List<String> days;
@@ -75,7 +80,17 @@ class NapsData {
     final days = await repo.availableDays();
     final day = pickDay(days, want, todayLabel()) ?? todayLabel();
     final d = await repo.getDayNaps(day);
+    final hr = <(int, num)>[];
+    try {
+      final h = await repo.getDayHeart(day);
+      for (final e in (h['hr'] as List?) ?? const []) {
+        if (e is Map && e['t'] is num && e['v'] is num) {
+          hr.add(((e['t'] as num).toInt(), e['v'] as num));
+        }
+      }
+    } catch (_) {}
     return NapsData(
+      hr: hr,
       day: day,
       days: days,
       naps: [
@@ -365,6 +380,50 @@ class _NapsScreenState extends State<NapsScreen> {
     );
   }
 
+  /// How restful the nap was, read from the heart rate alone: the average
+  /// during the nap against the average of the awake stretch just before it.
+  /// A bigger fall means a deeper rest. Not a sleep stage and not a score;
+  /// with too few readings it says so instead of guessing.
+  List<Widget> _restLines(P p, Map<String, dynamic> nap) {
+    final hr = _d?.hr ?? const <(int, num)>[];
+    final start = (nap['start'] as num).toInt(), end = (nap['end'] as num).toInt();
+    final during = [
+      for (final e in hr)
+        if (e.$1 >= start && e.$1 <= end) e.$2.toDouble()
+    ];
+    final before = [
+      for (final e in hr)
+        if (e.$1 >= start - 7200 && e.$1 < start) e.$2.toDouble()
+    ];
+    if (during.length < 5 || before.length < 10) {
+      return [
+        const SizedBox(height: S.x1),
+        Text('Not enough heart rate data to judge the rest',
+            style: F.cap.copyWith(color: p.ink3)),
+      ];
+    }
+    before.sort();
+    final base = before[before.length ~/ 2];
+    final avg = during.reduce((a, b) => a + b) / during.length;
+    final low = during.reduce((a, b) => a < b ? a : b);
+    final dip = (base - avg) / base * 100;
+    final verdict = dip >= 10
+        ? 'Deep rest'
+        : dip >= 5
+            ? 'Light rest'
+            : 'Barely rested';
+    final drop = dip <= 0
+        ? 'no drop from your ${base.round()} before'
+        : '${dip.round()}% below your ${base.round()} before';
+    final detail = '$verdict · heart rate ${avg.round()} bpm, $drop';
+    return [
+      const SizedBox(height: S.x1),
+      Text(detail, style: F.cap.copyWith(color: p.ink2)),
+      Text('Lowest ${low.round()} bpm · estimated from heart rate only',
+          style: F.cap.copyWith(color: p.ink3)),
+    ];
+  }
+
   Widget _nap(BuildContext c, P p, String day, Map<String, dynamic> nap) {
     final l = AppLocalizations.of(c);
     final mine = nap['source'] == 'manual';
@@ -402,6 +461,7 @@ class _NapsScreenState extends State<NapsScreen> {
                           '${hm(mins)} asleep · detected')),
               style: F.cap.copyWith(color: p.ink3),
             ),
+            ..._restLines(p, nap),
           ]),
         ),
         const SizedBox(width: S.x2),
