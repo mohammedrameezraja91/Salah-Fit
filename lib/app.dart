@@ -19,6 +19,7 @@ import 'theme/theme_switcher.dart';
 import 'widget/widget_service.dart';
 import 'ui2/profile/prayer.dart' show PrayerScreen;
 import 'ui2/screens/salah_sleep_home.dart';
+import 'ui2/screens/salah_dashboards.dart';
 import 'ui2/activity/catalogue.dart';
 import 'ui2/activity/live.dart';
 import 'ui2/onboarding/pairing.dart' show OnboardingBypass;
@@ -601,9 +602,9 @@ class _ShellState extends State<_Shell> {
       },
       builder: (c, d) => switch (d) {
         ShellDomain.today => const SalahSleepHome(),
-        ShellDomain.sleep => const PrayerScreen(inTab: true),
-        ShellDomain.activity => const WorkoutScreen(),
-        ShellDomain.health => const HealthScreen(),
+        ShellDomain.sleep => const SalahPrayerHome(),
+        ShellDomain.activity => const SalahActivityHome(),
+        ShellDomain.health => const SalahHealthHome(),
       },
     );
   }
