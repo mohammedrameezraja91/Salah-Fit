@@ -97,15 +97,19 @@ class ProfileSetupView extends StatefulWidget {
 }
 
 class _ProfileSetupViewState extends State<ProfileSetupView> {
-  // Salah Fit: name, height and weight only, picked on rulers. Sex and age
-  // stay optional and live in Profile; the metrics that need them abstain
-  // until they're set, exactly as before when a field was left blank.
+  // Salah Fit: name, height, weight and age on rulers, plus sex. Age and sex
+  // drive heart-rate zones, calories and strain; if sex is skipped those
+  // metrics abstain until it is set in Profile.
   late final _name =
       TextEditingController(text: (widget.initial['name'] as String?) ?? '');
   late double _heightCm =
       ((widget.initial['height_cm'] as num?) ?? 170).toDouble().clamp(120.0, 220.0);
   late double _weightKg =
       ((widget.initial['weight_kg'] as num?) ?? 70).toDouble().clamp(30.0, 200.0);
+
+  late double _age =
+      ((widget.initial['age'] as num?) ?? 30).toDouble().clamp(10.0, 90.0);
+  late String? _sex = (widget.initial['sex'] as String?)?.toLowerCase();
 
   @override
   void initState() {
@@ -125,6 +129,8 @@ class _ProfileSetupViewState extends State<ProfileSetupView> {
       if (name.isNotEmpty) 'name': name,
       'height_cm': _heightCm.round(),
       'weight_kg': _weightKg.round(),
+      'age': _age.round(),
+      if (_sex != null) 'sex': _sex,
     });
   }
 
@@ -210,6 +216,35 @@ class _ProfileSetupViewState extends State<ProfileSetupView> {
                   min: 30,
                   max: 200,
                   onChanged: (v) => setState(() => _weightKg = v),
+                ),
+                const SizedBox(height: S.x3),
+                _RulerTile(
+                  label: 'Age',
+                  unit: 'yrs',
+                  value: _age,
+                  min: 10,
+                  max: 90,
+                  onChanged: (v) => setState(() => _age = v),
+                ),
+                const SizedBox(height: S.x3),
+                _Tile(
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Sex', style: F.cap.copyWith(color: p.ink3)),
+                        const SizedBox(height: S.x2),
+                        Row(children: [
+                          for (final (code, label) in _sexes(c)) ...[
+                            Expanded(
+                              child: _Choice(
+                                  label: label,
+                                  on: _sex == code,
+                                  onTap: () => setState(() => _sex = code)),
+                            ),
+                            if (code != 'other') const SizedBox(width: S.x2),
+                          ],
+                        ]),
+                      ]),
                 ),
                 const SizedBox(height: S.x4),
                 Row(children: [
