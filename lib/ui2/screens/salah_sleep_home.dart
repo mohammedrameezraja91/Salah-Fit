@@ -15,7 +15,6 @@ import 'package:provider/provider.dart';
 import '../../prayer/prayer_settings.dart';
 import '../../prayer/prayer_times.dart';
 import '../../state/app_state.dart';
-import '../profile/prayer.dart' show prayerDoor;
 import '../profile/profile.dart' show ProfileAvatar;
 import '../revision.dart';
 import '../ui2.dart';
@@ -111,8 +110,6 @@ class _SalahSleepHomeState extends State<SalahSleepHome> with RevisionReload {
             const SizedBox(height: S.x3),
             _weekCard(c, p, n, night),
           ],
-          const SizedBox(height: S.x3),
-          prayerDoor(c),
           const SizedBox(height: S.x4),
           _link(c, p, LucideIcons.moon, 'Sleep details',
               'Hypnogram, sleep plan, alarm and body clock', () {
