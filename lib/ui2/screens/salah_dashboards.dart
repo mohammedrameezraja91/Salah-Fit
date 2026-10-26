@@ -10,16 +10,99 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:provider/provider.dart';
 
 import '../../prayer/prayer_settings.dart';
 import '../../prayer/prayer_times.dart';
 import '../profile/prayer.dart' show PrayerScreen;
+import '../../state/app_state.dart';
 import '../revision.dart';
 import '../ui2.dart';
 import 'health_screen.dart' show HealthScreen;
 import 'home_screen.dart' show HomeData, repoOf;
 import 'sleep_detail.dart' show SleepData;
 import 'workout_screen.dart' show WorkoutScreen;
+
+/// "Updated 3 min ago" plus a refresh button that pulls the band's backlog
+/// now. The time is the newest record the band has delivered, so it is the
+/// age of the data, not of the last tap. Hidden when no band is paired.
+class SyncStatusBar extends StatefulWidget {
+  const SyncStatusBar({super.key});
+
+  @override
+  State<SyncStatusBar> createState() => _SyncStatusBarState();
+}
+
+class _SyncStatusBarState extends State<SyncStatusBar> {
+  bool _busy = false;
+  Timer? _tick;
+
+  @override
+  void initState() {
+    super.initState();
+    _tick = Timer.periodic(
+        const Duration(seconds: 30), (_) => mounted ? setState(() {}) : null);
+  }
+
+  @override
+  void dispose() {
+    _tick?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _sync(AppState app) async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    try {
+      await app.syncNow().timeout(const Duration(seconds: 90));
+    } catch (_) {
+      // A timeout or failed sync still leaves whatever did arrive.
+    }
+    if (mounted) setState(() => _busy = false);
+  }
+
+  static String _ago(DateTime t) {
+    final m = DateTime.now().difference(t).inMinutes;
+    if (m < 1) return 'just now';
+    if (m < 60) return '$m min ago';
+    if (m < 24 * 60) return '${m ~/ 60} h ago';
+    return '${m ~/ (24 * 60)} d ago';
+  }
+
+  @override
+  Widget build(BuildContext c) {
+    final p = P.of(c);
+    final (paired, at, syncing) = c.select<AppState,
+        (bool, DateTime?, bool)>((a) => (a.isPaired, a.lastRecordAt, a.syncingNow));
+    if (!paired) return const SizedBox.shrink();
+    final app = c.read<AppState>();
+    final busy = _busy || syncing;
+    return Pressable(
+      onTap: busy ? null : () => _sync(app),
+      semanticLabel: 'Sync the band now',
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: S.x1),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          busy
+              ? SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: p.on(C.green)))
+              : Icon(LucideIcons.refreshCw, size: 14, color: p.on(C.green)),
+          const SizedBox(width: S.x2),
+          Text(
+              busy
+                  ? 'Syncing…'
+                  : at == null
+                      ? 'Not synced yet · tap to sync'
+                      : 'Updated ${_ago(at)} · tap to sync',
+              style: F.cap.copyWith(color: p.ink2)),
+        ]),
+      ),
+    );
+  }
+}
 
 // ── shared bits ───────────────────────────────────────────────────────────────
 
@@ -118,6 +201,7 @@ Widget _title(P p, String t, String sub) =>
       Text(t, style: F.t1.copyWith(color: p.ink)),
       const SizedBox(height: S.x1),
       Text(sub, style: F.cap.copyWith(color: p.ink2)),
+      const SyncStatusBar(),
     ]);
 
 Widget _link(P p, IconData icon, String title, String sub, VoidCallback onTap) =>

@@ -18,6 +18,7 @@ import '../../state/app_state.dart';
 import '../profile/profile.dart' show ProfileAvatar;
 import '../revision.dart';
 import '../ui2.dart';
+import 'salah_dashboards.dart' show SyncStatusBar;
 import 'home_screen.dart' show HomeScreen, envValue, repoOf;
 import 'sleep_detail.dart' show SleepData;
 import 'sleep_tab.dart';
@@ -152,6 +153,7 @@ class _SalahSleepHomeState extends State<SalahSleepHome> with RevisionReload {
               style: F.t1.copyWith(color: p.ink)),
           const SizedBox(height: S.x1),
           Text(date, style: F.cap.copyWith(color: p.ink2)),
+          const SyncStatusBar(),
         ]),
       ),
       const ProfileAvatar(accent: C.domHome),
