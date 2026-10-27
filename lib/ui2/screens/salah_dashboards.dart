@@ -119,6 +119,23 @@ class _DataRefresherState extends State<DataRefresher> {
   DateTime? _rec;
   bool _deriving = false;
   bool _first = true;
+  Timer? _poll;
+
+  @override
+  void initState() {
+    super.initState();
+    // Belt and braces: re-read every 30 s so a screen that loaded before the
+    // night was analysed can never stay stuck on "nothing yet".
+    _poll = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (mounted) widget.onChange();
+    });
+  }
+
+  @override
+  void dispose() {
+    _poll?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext c) {
