@@ -154,6 +154,107 @@ class _DataRefresherState extends State<DataRefresher> {
   }
 }
 
+/// "WHOOP connected | battery". Connection from the live link, battery from the
+/// last level the band reported (kept when the band is away). Tapping while
+/// disconnected asks the app to reconnect.
+class BandStatusPill extends StatelessWidget {
+  const BandStatusPill({super.key});
+
+  @override
+  Widget build(BuildContext c) {
+    final p = P.of(c);
+    final (paired, connected, pct, charging) = c.select<AppState,
+            (bool, bool, double?, bool)>(
+        (a) => (a.isPaired, a.isConnected, a.device.batteryPct, a.device.charging ?? false));
+    if (!paired) return const SizedBox.shrink();
+    final low = pct != null && pct <= 20 && !charging;
+    final batCol = low
+        ? p.on(C.red)
+        : charging
+            ? p.on(C.teal)
+            : p.on(C.green);
+    final dot = connected ? p.on(C.teal) : p.on(C.orange);
+    final pill = Container(
+      padding: const EdgeInsets.symmetric(horizontal: S.x3, vertical: S.x2),
+      decoration: BoxDecoration(
+          color: p.card, borderRadius: BorderRadius.circular(999)),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(color: dot, shape: BoxShape.circle)),
+        const SizedBox(width: S.x2),
+        Text(connected ? 'WHOOP connected' : 'WHOOP not connected',
+            style: F.cap.copyWith(color: p.ink)),
+        if (!connected) ...[
+          Container(
+              width: 1,
+              height: 14,
+              margin: const EdgeInsets.symmetric(horizontal: S.x3),
+              color: p.line),
+          Text('Tap to reconnect',
+              style: F.cap.copyWith(color: p.on(C.green))),
+        ],
+        if (pct != null) ...[
+          Container(
+              width: 1,
+              height: 14,
+              margin: const EdgeInsets.symmetric(horizontal: S.x3),
+              color: p.line),
+          SizedBox(
+              width: 26,
+              height: 14,
+              child: CustomPaint(
+                  painter: _BatteryIcon((pct / 100).clamp(0.0, 1.0), batCol))),
+          const SizedBox(width: S.x1),
+          Text(charging ? '${pct.round()}% · charging' : '${pct.round()}%',
+              style: F.cap.copyWith(color: batCol, fontWeight: FontWeight.w600)),
+        ],
+      ]),
+    );
+    return Padding(
+      padding: const EdgeInsets.only(top: S.x2),
+      child: connected
+          ? pill
+          : Pressable(
+              onTap: () => c.read<AppState>().openSession(),
+              semanticLabel: 'Reconnect the band',
+              child: pill),
+    );
+  }
+}
+
+class _BatteryIcon extends CustomPainter {
+  final double frac;
+  final Color color;
+  const _BatteryIcon(this.frac, this.color);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final line = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+    canvas.drawRRect(
+        RRect.fromRectAndRadius(
+            const Rect.fromLTWH(0.5, 0.5, 22, 13), const Radius.circular(3)),
+        line);
+    final fill = Paint()..color = color;
+    canvas.drawRRect(
+        RRect.fromRectAndRadius(
+            const Rect.fromLTWH(23, 4, 2.5, 6), const Radius.circular(1)),
+        fill);
+    final w = math.max(2.0, 19 * frac);
+    canvas.drawRRect(
+        RRect.fromRectAndRadius(
+            Rect.fromLTWH(2, 2, w, 10), const Radius.circular(1.5)),
+        fill);
+  }
+
+  @override
+  bool shouldRepaint(_BatteryIcon o) => o.frac != frac || o.color != color;
+}
+
 // ── shared bits ───────────────────────────────────────────────────────────────
 
 class _Ring extends CustomPainter {

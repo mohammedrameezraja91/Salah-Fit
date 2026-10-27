@@ -14,8 +14,7 @@ import '../profile/profile.dart' show ProfileAvatar;
 import '../revision.dart';
 import '../ui2.dart';
 import 'home_screen.dart' show HomeData, envValue, repoOf;
-import 'salah_dashboards.dart' show DataRefresher, SyncStatusBar;
-import 'salah_sleep_home.dart' show kHijriMonths, salahHijri;
+import 'salah_dashboards.dart' show BandStatusPill, DataRefresher, SyncStatusBar;
 import 'sleep_detail.dart' show SleepData;
 
 class SalahDashboard extends StatefulWidget {
@@ -81,9 +80,7 @@ class _DashState extends State<SalahDashboard> with RevisionReload {
         .select<AppState, String?>((a) => a.user?['name'] as String?)
         ?.trim();
     final now = DateTime.now();
-    final h = salahHijri(now);
-    final date =
-        '${_wd[now.weekday - 1]}, ${now.day} ${_mo[now.month - 1]} · ${h.day} ${kHijriMonths[h.month - 1]}';
+    final date = '${_wd[now.weekday - 1]}, ${now.day} ${_mo[now.month - 1]}';
     return RefreshIndicator(
       onRefresh: _load,
       child: ListView(
@@ -103,6 +100,7 @@ class _DashState extends State<SalahDashboard> with RevisionReload {
                     const SizedBox(height: S.x1),
                     Text(date, style: F.cap.copyWith(color: p.ink2)),
                     const SyncStatusBar(),
+                    const BandStatusPill(),
                   ]),
             ),
             const ProfileAvatar(accent: C.domHome),
