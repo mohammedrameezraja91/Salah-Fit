@@ -185,6 +185,9 @@ bool recoveryNightSettled({
   );
 }
 
+/// SharedPreferences key: millilitres one double-tap adds when it logs water.
+const String kWaterPerTapKey = 'salahfit_water_per_tap_ml';
+
 class AppState extends ChangeNotifier {
   late final BleEngine engine;
 
@@ -5261,10 +5264,12 @@ class AppState extends ChangeNotifier {
       // the whole day from what it is handed.
       final fields = {...await r.getJournalMetrics(date)};
       final now = fields['water_ml']?.value ?? 0;
+      // The size of one glass, set under Settings > Double-tap.
+      final perTap = Prefs.getInt(kWaterPerTapKey, spec.step.round()).toDouble();
       fields['water_ml'] =
-          JournalMetricValue((now + spec.step).clamp(0, spec.max).toDouble());
+          JournalMetricValue((now + perTap).clamp(0, spec.max).toDouble());
       await r.postJournalMetrics(date, fields);
-      _log('[gesture] water logged (+${spec.step.round()} ${spec.unit})');
+      _log('[gesture] water logged (+${perTap.round()} ${spec.unit})');
       await HapticFeedback.mediumImpact();
     } catch (e) {
       _log('[gesture] log water failed: $e');

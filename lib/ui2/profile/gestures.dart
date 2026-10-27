@@ -21,6 +21,7 @@ import 'package:provider/provider.dart';
 import '../../gestures/device_action.dart';
 import '../../l10n/app_localizations.dart';
 import '../../state/app_state.dart';
+import '../../state/prefs.dart';
 import '../ui2.dart';
 import 'profile.dart';
 
@@ -102,6 +103,10 @@ class BandGesturesView extends StatelessWidget {
                       onTap: onPick == null ? null : () => onPick!(a),
                     ),
                 ]),
+                if (chosen == DeviceAction.logWater) ...[
+                  const SizedBox(height: S.x5),
+                  const _WaterPerTap(),
+                ],
                 if (noPhoneActions) ...[
                   const SizedBox(height: S.x5),
                   Section(
@@ -118,6 +123,59 @@ class BandGesturesView extends StatelessWidget {
               ],
             ),
           ),
+        ]),
+      ),
+    );
+  }
+}
+
+/// How much one double-tap adds when the action is "Log water".
+class _WaterPerTap extends StatefulWidget {
+  const _WaterPerTap();
+
+  @override
+  State<_WaterPerTap> createState() => _WaterPerTapState();
+}
+
+class _WaterPerTapState extends State<_WaterPerTap> {
+  static const _options = [150, 200, 250, 300, 500];
+  late int _ml = Prefs.getInt(kWaterPerTapKey, 250);
+
+  @override
+  Widget build(BuildContext c) {
+    final p = P.of(c);
+    return Section(
+      'Water per tap',
+      Surface(
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('One double-tap adds this much to today\'s water.',
+              style: F.body.copyWith(color: p.ink2, height: 1.4)),
+          const SizedBox(height: S.x3),
+          Wrap(spacing: S.x2, runSpacing: S.x2, children: [
+            for (final o in [..._options, if (!_options.contains(_ml)) _ml])
+              Pressable(
+                onTap: () {
+                  Prefs.setInt(kWaterPerTapKey, o);
+                  setState(() => _ml = o);
+                },
+                semanticLabel: '$o millilitres',
+                child: Container(
+                  constraints: const BoxConstraints(minHeight: S.tap),
+                  padding: const EdgeInsets.symmetric(horizontal: S.x4),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: o == _ml ? p.wash(C.green) : p.card,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: o == _ml ? p.on(C.green) : p.line),
+                  ),
+                  child: Text('$o ml',
+                      style: F.body.copyWith(
+                          color: o == _ml ? p.on(C.green) : p.ink2,
+                          fontWeight:
+                              o == _ml ? FontWeight.w600 : FontWeight.w400)),
+                ),
+              ),
+          ]),
         ]),
       ),
     );
