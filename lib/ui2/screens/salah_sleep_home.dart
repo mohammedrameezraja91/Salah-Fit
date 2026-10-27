@@ -11,6 +11,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../data/day_label.dart' show todayLabel;
 import '../../prayer/prayer_settings.dart';
 import '../../prayer/prayer_times.dart';
 import '../app_shell.dart' show ShellDomain, shellJump;
@@ -44,6 +45,9 @@ class _Night {
 
 class _SalahSleepHomeState extends State<SalahSleepHome> with RevisionReload {
   _Night? _n;
+  NapsData? _naps;
+  bool _napsLoaded = false;
+  String? _napsDay;
   bool _loading = true;
   String? _day; // null = the latest night
 
@@ -63,6 +67,19 @@ class _SalahSleepHomeState extends State<SalahSleepHome> with RevisionReload {
       if (mounted) setState(() => _loading = false);
       return;
     }
+    // Naps load on their own: they belong to the day, not to the night, and
+    // must still show if the night fails to load.
+    try {
+      final nd = await NapsData.load(repo, want: _day);
+      if (mounted) {
+        setState(() {
+          _naps = nd;
+          _napsLoaded = true;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _napsLoaded = true);
+    }
     try {
       final d = await SleepData.load(repo, want: _day);
       num? hrv;
@@ -78,10 +95,7 @@ class _SalahSleepHomeState extends State<SalahSleepHome> with RevisionReload {
       try {
         prayer = await PrayerSettings.load();
       } catch (_) {}
-      NapsData? naps;
-      try {
-        if (d.day != null) naps = await NapsData.load(repo, want: d.day);
-      } catch (_) {}
+      const NapsData? naps = null;
       if (!mounted || !stillNewest(#sleepHome, t)) return;
       setState(() {
         _n = _Night(d, hrv, perf, prayer, naps);
@@ -132,6 +146,8 @@ class _SalahSleepHomeState extends State<SalahSleepHome> with RevisionReload {
           else ...[
             _heroCard(c, p, n!, night),
             const SizedBox(height: S.x3),
+            _napsCard(c, p, day),
+            const SizedBox(height: S.x3),
             _timelineCard(c, p, n, night, day),
             const SizedBox(height: S.x3),
             _stagesCard(c, p, night),
@@ -140,11 +156,13 @@ class _SalahSleepHomeState extends State<SalahSleepHome> with RevisionReload {
             const SizedBox(height: S.x3),
             _vitalsCard(c, p, n, night),
           ],
+          if (!hasNight && !(_loading && n == null)) ...[
+            const SizedBox(height: S.x3),
+            _napsCard(c, p, day),
+          ],
           if (n != null) ...[
             const SizedBox(height: S.x3),
             _planCard(c, p, n, day),
-            const SizedBox(height: S.x3),
-            _napsCard(c, p, n, day),
             const SizedBox(height: S.x3),
             _weekCard(c, p, n, night, day),
           ],
@@ -493,14 +511,17 @@ class _SalahSleepHomeState extends State<SalahSleepHome> with RevisionReload {
         ]));
   }
 
-  Widget _napsCard(BuildContext c, P p, _Night n, String? day) {
-    final naps = n.naps?.naps ?? const <Map<String, dynamic>>[];
-    return _section(c, p, 'Naps',
+  Widget _napsCard(BuildContext c, P p, String? sleepDay) {
+    final nd = _naps;
+    final day = nd?.day ?? sleepDay;
+    final naps = nd?.naps ?? const <Map<String, dynamic>>[];
+    final isToday = _day == null || day == todayLabel();
+    return _section(c, p, isToday ? "Today's naps" : 'Naps',
         more: 'Naps',
         onMore: day == null ? null : () => _push(c, NapsScreen(day: day)),
         child: naps.isEmpty
             ? Text(
-                (n.naps?.judged ?? false)
+                (nd?.judged ?? false)
                     ? 'No naps today. Tap Naps to add one.'
                     : 'Naps appear here. Tap Naps to add one.',
                 style: F.cap.copyWith(color: p.ink3))

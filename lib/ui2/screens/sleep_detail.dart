@@ -540,7 +540,7 @@ class _SleepDetailState extends State<SleepDetail> with RevisionReload {
       final rejected =
           (d.night['sleep_source'] as String?) == 'rejected' && rejectedDay != null;
       return _frame(c, title, [
-        ...dayNavRow(_day ?? d.day, d.days, _goDay),
+        ...dayNavRow(_day ?? d.day, d.days, _goDay, todayLabel: 'Last night'),
         const SizedBox(height: S.x2),
         // A day CAN be in `availableDays` and still hold no night — the band
         // was worn through the day and off overnight. Stepping onto one of
@@ -605,7 +605,7 @@ class _SleepDetailState extends State<SleepDetail> with RevisionReload {
     // thing that dates the screen.
     return _frame(c, title,
         sub: d.days.length < 2 ? (d.day ?? '').toUpperCase() : '', [
-      ...dayNavRow(_day ?? d.day, d.days, _goDay),
+      ...dayNavRow(_day ?? d.day, d.days, _goDay, todayLabel: 'Last night'),
 
       // ── 1 · THE ANSWER ──
       _answer(c, p, d, n),

@@ -1993,8 +1993,10 @@ String? pickDay(List<String> days, String? want, [String? prefer]) {
 
 /// 'Today' when it is, otherwise the day itself. Never "N days ago" — a
 /// control you steer with needs the name of the place, not the distance to it.
-String dayNavLabel(String? day, [AppLocalizations? l]) =>
-    (_dayBehind(day) ?? 1) <= 0 ? l?.healthToday ?? 'Today' : prettyDay(day, l);
+String dayNavLabel(String? day, [AppLocalizations? l, String? todayLabel]) =>
+    (_dayBehind(day) ?? 1) <= 0
+        ? todayLabel ?? l?.healthToday ?? 'Today'
+        : prettyDay(day, l);
 
 int? _dayBehind(String? dayId) {
   final d = dayId == null ? null : DateTime.tryParse(dayId);
@@ -2032,12 +2034,14 @@ class DayNav extends StatelessWidget {
   final String? day;
   final List<String> days;
   final ValueChanged<String> onDay;
+  final String? todayLabel;
 
   const DayNav({
     super.key,
     required this.day,
     required this.days,
     required this.onDay,
+    this.todayLabel,
   });
 
   @override
@@ -2071,10 +2075,10 @@ class DayNav extends StatelessWidget {
               if (picked != null && picked != day) onDay(picked);
             },
               semanticLabel:
-                  l?.metricDetailChooseDayShowing(dayNavLabel(day, l)) ??
-                  'Choose a day. Showing ${dayNavLabel(day, l)}',
+                  l?.metricDetailChooseDayShowing(dayNavLabel(day, l, todayLabel)) ??
+                  'Choose a day. Showing ${dayNavLabel(day, l, todayLabel)}',
               child: Text(
-                dayNavLabel(day, l),
+                dayNavLabel(day, l, todayLabel),
                 textAlign: TextAlign.center,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -2091,11 +2095,12 @@ class DayNav extends StatelessWidget {
 /// [DayNav] and the gap under it, spread into a `detailScaffold` body — or
 /// nothing at all when there is only one day to look at.
 List<Widget> dayNavRow(
-        String? day, List<String> days, ValueChanged<String> onDay) =>
+        String? day, List<String> days, ValueChanged<String> onDay,
+        {String? todayLabel}) =>
     days.length < 2
         ? const []
         : [
-            DayNav(day: day, days: days, onDay: onDay),
+            DayNav(day: day, days: days, onDay: onDay, todayLabel: todayLabel),
             const SizedBox(height: S.x3),
           ];
 
