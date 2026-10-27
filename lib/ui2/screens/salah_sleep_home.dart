@@ -18,7 +18,7 @@ import '../../state/app_state.dart';
 import '../profile/profile.dart' show ProfileAvatar;
 import '../revision.dart';
 import '../ui2.dart';
-import 'salah_dashboards.dart' show SyncStatusBar;
+import 'salah_dashboards.dart' show SyncStatusBar, DataRefresher;
 import 'home_screen.dart' show HomeScreen, envValue, repoOf;
 import 'sleep_detail.dart' show SleepData;
 import 'sleep_tab.dart';
@@ -94,6 +94,7 @@ class _SalahSleepHomeState extends State<SalahSleepHome> with RevisionReload {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(S.x4, S.x3, S.x4, S.x10),
         children: [
+          DataRefresher(onChange: _load),
           _header(c, p),
           const SizedBox(height: S.x4),
           if (_loading && n == null)
@@ -160,22 +161,28 @@ class _SalahSleepHomeState extends State<SalahSleepHome> with RevisionReload {
     ]);
   }
 
-  Widget _emptyCard(BuildContext c, P p) => Surface(
+  Widget _emptyCard(BuildContext c, P p) {
+    final working = c.select<AppState, bool>((a) => a.deriving || a.syncingNow);
+    return Surface(
         child: Row(children: [
           Icon(LucideIcons.bedDouble, color: p.on(C.green), size: 28),
           const SizedBox(width: S.x3),
           Expanded(
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('No night yet', style: F.head.copyWith(color: p.ink)),
+              Text(working ? 'Working out last night' : 'No night yet',
+                  style: F.head.copyWith(color: p.ink)),
               const SizedBox(height: S.x1),
               Text(
-                  'Wear the band tonight. Your sleep shows here in the morning.',
+                  working
+                      ? 'Your band data is being analysed. This fills in on its own.'
+                      : 'Wear the band tonight and sync in the morning. If you slept with it on, tap sync above.',
                   style: F.cap.copyWith(color: p.ink2)),
             ]),
           ),
         ]),
       );
+  }
 
   Widget _heroCard(
       BuildContext c, P p, _Night n, Map<String, dynamic> night) {

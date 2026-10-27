@@ -104,6 +104,39 @@ class _SyncStatusBarState extends State<SyncStatusBar> {
   }
 }
 
+/// Invisible. Calls [onChange] when new band data lands or a derive finishes,
+/// so a dashboard that was showing "nothing yet" fills in without a manual
+/// pull-down.
+class DataRefresher extends StatefulWidget {
+  final VoidCallback onChange;
+  const DataRefresher({super.key, required this.onChange});
+
+  @override
+  State<DataRefresher> createState() => _DataRefresherState();
+}
+
+class _DataRefresherState extends State<DataRefresher> {
+  DateTime? _rec;
+  bool _deriving = false;
+  bool _first = true;
+
+  @override
+  Widget build(BuildContext c) {
+    final (rec, deriving) = c.select<AppState, (DateTime?, bool)>(
+        (a) => (a.lastRecordAt, a.deriving));
+    final changed = !_first && (rec != _rec || (_deriving && !deriving));
+    _first = false;
+    _rec = rec;
+    _deriving = deriving;
+    if (changed) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) widget.onChange();
+      });
+    }
+    return const SizedBox.shrink();
+  }
+}
+
 // ── shared bits ───────────────────────────────────────────────────────────────
 
 class _Ring extends CustomPainter {
@@ -287,6 +320,7 @@ class _ActivityState extends State<SalahActivityHome> with RevisionReload {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(S.x4, S.x3, S.x4, S.x10),
         children: [
+          DataRefresher(onChange: _load),
           _title(p, 'Activity', 'How hard your body worked today'),
           const SizedBox(height: S.x4),
           if (_loading && d == null)
@@ -589,6 +623,7 @@ class _HealthState extends State<SalahHealthHome> with RevisionReload {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(S.x4, S.x3, S.x4, S.x10),
         children: [
+          DataRefresher(onChange: _load),
           _title(p, 'Health', 'How recovered your body is'),
           const SizedBox(height: S.x4),
           if (_loading && d == null)
