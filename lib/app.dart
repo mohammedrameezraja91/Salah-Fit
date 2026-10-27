@@ -20,6 +20,7 @@ import 'widget/widget_service.dart';
 import 'ui2/profile/prayer.dart' show PrayerScreen;
 import 'ui2/screens/salah_sleep_home.dart';
 import 'ui2/screens/salah_dashboards.dart';
+import 'ui2/screens/salah_dashboard.dart';
 import 'ui2/activity/catalogue.dart';
 import 'ui2/activity/live.dart';
 import 'ui2/onboarding/pairing.dart' show OnboardingBypass;
@@ -383,10 +384,10 @@ class _InitFailed extends StatelessWidget {
 /// working, which is the whole point — a notification is scheduled days
 /// before it is tapped.
 ShellDomain domainForTab(int tab) => switch (tab) {
-      1 => ShellDomain.sleep,
+      1 => ShellDomain.today,
       2 || 3 => ShellDomain.health,
       4 => ShellDomain.activity,
-      _ => ShellDomain.today,
+      _ => ShellDomain.dashboard,
     };
 
 /// The tab a build with the five-tab bar (Home, Health, Nutrition, Workout,
@@ -400,6 +401,9 @@ ShellDomain domainForSavedTab(int old) => switch (old) {
 /// The tab to open on: the four-tab index once one was saved, otherwise the
 /// old five-tab index translated, so an upgrade lands where the user was.
 ShellDomain restoredShellTab() {
+  // Salah Fit always opens on the Dashboard.
+  if (true) return ShellDomain.dashboard;
+  // ignore: dead_code
   final v2 = Prefs.getInt(Prefs.shellTabV2, -1);
   if (v2 >= 0 && v2 < ShellDomain.values.length) return ShellDomain.values[v2];
   return domainForSavedTab(Prefs.getInt(Prefs.shellTab, 0));
@@ -601,6 +605,7 @@ class _ShellState extends State<_Shell> {
         Prefs.setInt(Prefs.shellTabV2, d.index);
       },
       builder: (c, d) => switch (d) {
+        ShellDomain.dashboard => const SalahDashboard(),
         ShellDomain.today => const SalahSleepHome(),
         ShellDomain.sleep => const SalahPrayerHome(),
         ShellDomain.activity => const SalahActivityHome(),

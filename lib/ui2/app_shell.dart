@@ -24,6 +24,7 @@ import 'theme.dart';
 // home and `sleep` is the Salah tab. The old Today and Sleep screens are
 // pushed from the sleep home ("Full day overview", "Sleep details").
 enum ShellDomain {
+  dashboard('Dashboard', LucideIcons.house, C.domHome),
   today('Sleep', LucideIcons.moon, C.domHome),
   health('Health', LucideIcons.heartPulse, C.domHealth),
   activity('Activity', LucideIcons.dumbbell, C.domMove),
@@ -39,6 +40,7 @@ enum ShellDomain {
   String title(BuildContext c) {
     final l = AppLocalizations.of(c);
     return switch (this) {
+          ShellDomain.dashboard => null, // brand-neutral label, same everywhere
           ShellDomain.today => l?.tabSleep,
           ShellDomain.sleep => null, // 'Salah' is the same in every language
           ShellDomain.activity => l?.tabActivity,
@@ -57,6 +59,10 @@ enum ShellDomain {
 // nothing ever read it, and a pushed route could not have: `MaterialApp.home`
 // is the gate, so `Navigator.of` pushes above the shell entirely. Screens take
 // their accent as a parameter, which is honest about where it comes from.
+
+/// Any screen inside a tab can ask the shell to switch tab by setting this.
+/// The shell clears it once it has acted.
+final ValueNotifier<ShellDomain?> shellJump = ValueNotifier<ShellDomain?>(null);
 
 class AppShell extends StatefulWidget {
   /// Builds the body of one domain. Called lazily — a tab is not built until
@@ -78,7 +84,7 @@ class AppShell extends StatefulWidget {
   const AppShell({
     super.key,
     required this.builder,
-    this.initial = ShellDomain.today,
+    this.initial = ShellDomain.dashboard,
     this.onSelect,
     this.banner,
   });
@@ -94,8 +100,27 @@ class _AppShellState extends State<AppShell> {
   // here so Android Back can return to the previous tab. A restored tab or
   // cold-launch deep link has Today as its way back into the app.
   late final List<ShellDomain> _history = [
-    if (widget.initial != ShellDomain.today) ShellDomain.today,
+    if (widget.initial != ShellDomain.dashboard) ShellDomain.dashboard,
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    shellJump.addListener(_onJump);
+  }
+
+  @override
+  void dispose() {
+    shellJump.removeListener(_onJump);
+    super.dispose();
+  }
+
+  void _onJump() {
+    final d = shellJump.value;
+    if (d == null) return;
+    shellJump.value = null;
+    if (mounted) _select(d);
+  }
 
   void _select(ShellDomain d) {
     setState(() {
@@ -106,12 +131,12 @@ class _AppShellState extends State<AppShell> {
         _history.remove(_current);
         // Leaving Today puts it back at the bottom, never on top: it is the
         // last stop before Back leaves the app.
-        if (_current == ShellDomain.today) {
+        if (_current == ShellDomain.dashboard) {
           _history.insert(0, _current);
         } else {
           _history.add(_current);
         }
-        if (d != ShellDomain.today) _history.remove(d);
+        if (d != ShellDomain.dashboard) _history.remove(d);
       }
       _current = d;
       _built.add(d);
