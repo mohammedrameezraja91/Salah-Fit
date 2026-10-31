@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 
+import '../../models/metric.dart' show Metric;
 import '../../prayer/prayer_settings.dart';
 import '../../prayer/prayer_times.dart';
 import '../profile/prayer.dart' show PrayerScreen;
@@ -26,6 +27,23 @@ import 'workout_screen.dart' show WorkoutScreen;
 /// "Updated 3 min ago" plus a refresh button that pulls the band's backlog
 /// now. The time is the newest record the band has delivered, so it is the
 /// age of the data, not of the last tap. Hidden when no band is paired.
+/// Plain-language reason a score is missing, built from the metric's own
+/// abstention note ("need_baseline:have=4,need=7") instead of a bare dash.
+String absentWhy(Metric? m, String fallback) {
+  final more = m?.needMoreNights;
+  if (more != null) {
+    final have = RegExp(r'have=(\d+)').firstMatch(m?.note ?? '')?.group(1);
+    return have == null
+        ? 'Learning your normal — $more more ${more == 1 ? 'night' : 'nights'} to go'
+        : 'Learning your normal — $have nights so far, $more more to go';
+  }
+  final n = m?.note;
+  if (n != null && n.trim().isNotEmpty && !n.startsWith('need_baseline')) {
+    return n.length > 90 ? '${n.substring(0, 90)}…' : n;
+  }
+  return fallback;
+}
+
 class SyncStatusBar extends StatefulWidget {
   const SyncStatusBar({super.key});
 
@@ -451,7 +469,7 @@ class _ActivityState extends State<SalahActivityHome> with RevisionReload {
                 label: 'Day strain',
                 big: strain == null ? '—' : strain.toStringAsFixed(1),
                 note: strain == null
-                    ? 'Builds as the day goes on'
+                    ? absentWhy(d?.strain, 'Builds as the day goes on')
                     : null),
             const SizedBox(height: S.x3),
             Surface(
@@ -760,7 +778,8 @@ class _HealthState extends State<SalahHealthHome> with RevisionReload {
                             ? 'Fair'
                             : 'Low',
                 note: rec == null
-                    ? 'Needs about 2 weeks of nights to learn your normal'
+                    ? absentWhy(d?.readiness,
+                        'Needs 7 nights to learn your normal')
                     : null),
             const SizedBox(height: S.x3),
             _twoUp(

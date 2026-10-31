@@ -14,7 +14,7 @@ import '../profile/profile.dart' show ProfileAvatar;
 import '../revision.dart';
 import '../ui2.dart';
 import 'home_screen.dart' show HomeData, envValue, repoOf;
-import 'salah_dashboards.dart' show BandStatusPill, DataRefresher, SyncStatusBar;
+import 'salah_dashboards.dart' show BandStatusPill, DataRefresher, SyncStatusBar, absentWhy;
 import 'sleep_detail.dart' show SleepData;
 
 class SalahDashboard extends StatefulWidget {
@@ -207,7 +207,9 @@ class _DashState extends State<SalahDashboard> with RevisionReload {
                                     : 'Low recovery',
                         style: F.head.copyWith(color: p.ink)),
                     if (rec == null)
-                      Text('Needs about 2 weeks of nights',
+                      Text(
+                          absentWhy(_home?.readiness,
+                              'Needs 7 nights to learn your normal'),
                           style: F.cap.copyWith(color: p.ink3)),
                   ]),
             ),
@@ -238,7 +240,11 @@ class _DashState extends State<SalahDashboard> with RevisionReload {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('Day strain', style: F.head.copyWith(color: p.ink)),
-                    Text('out of 21', style: F.cap.copyWith(color: p.ink3)),
+                    Text(
+                        strain == null
+                            ? absentWhy(_home?.strain, 'Builds through the day')
+                            : 'out of 21',
+                        style: F.cap.copyWith(color: p.ink3)),
                   ]),
             ),
           ]),
