@@ -38,6 +38,7 @@ import 'findings.dart';
 import 'nap_overlap_cleanup.dart';
 import 'nap_edits.dart';
 import 'package:openstrap_analytics/onehz.dart' as ana;
+import 'nap_detector.dart' as nd;
 import '../data/live_coverage_policy.dart' show CoverageSpan;
 import '../data/step_calibration.dart';
 
@@ -9184,7 +9185,7 @@ class DerivationEngine {
       ];
       final hr = [for (final h in s.hr) h.toDouble()];
       // Map the main-sleep epoch-second window to indices into the day arrays.
-      ana.SleepWindowSpan? main;
+      nd.SleepWindowSpan? main;
       final excludeEndSec = napExcludeEndSec ?? offsetSec;
       if (excludeEndSec > onsetSec) {
         var lo = -1, hi = -1;
@@ -9192,9 +9193,9 @@ class DerivationEngine {
           if (lo < 0 && s.tsSec[i] >= onsetSec) lo = i;
           if (s.tsSec[i] < excludeEndSec) hi = i + 1;
         }
-        if (lo >= 0 && hi > lo) main = ana.SleepWindowSpan(lo, hi);
+        if (lo >= 0 && hi > lo) main = nd.SleepWindowSpan(lo, hi);
       }
-      final m = ana.detectNaps(
+      final m = nd.detectNaps(
         accel,
         hr,
         mainSleep: main,
