@@ -109,9 +109,9 @@ class _DashState extends State<SalahDashboard> with RevisionReload {
           if (_loading && _sleep == null)
             const SizedBox(height: 240)
           else ...[
-            _sleepCard(c, p),
-            const SizedBox(height: S.x4),
             _healthCard(c, p),
+            const SizedBox(height: S.x4),
+            _sleepCard(c, p),
             const SizedBox(height: S.x4),
             _activityCard(c, p),
           ],
@@ -187,7 +187,7 @@ class _DashState extends State<SalahDashboard> with RevisionReload {
     final rec = _home?.readiness.value;
     final rhr = _home?.rhr.value;
     final resp = ((_sleep?.night ?? const {})['resp'] as Map?)?['value'] as num?;
-    return _card(c, p, 'Health', LucideIcons.heartPulse, ShellDomain.health,
+    return _card(c, p, 'Recovery', LucideIcons.heartPulse, ShellDomain.health,
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
             _ring(p, rec == null ? null : rec.toDouble() / 100,
@@ -230,7 +230,7 @@ class _DashState extends State<SalahDashboard> with RevisionReload {
     final steps = _home?.steps.value;
     final goal = _home?.stepGoal ?? 10000;
     final kcal = _home?.calories.value;
-    return _card(c, p, 'Activity', LucideIcons.dumbbell, ShellDomain.activity,
+    return _card(c, p, 'Strain', LucideIcons.zap, ShellDomain.activity,
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
             _ring(p, strain == null ? null : strain.toDouble() / 21,

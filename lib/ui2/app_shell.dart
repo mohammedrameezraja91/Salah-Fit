@@ -25,9 +25,9 @@ import 'theme.dart';
 // pushed from the sleep home ("Full day overview", "Sleep details").
 enum ShellDomain {
   dashboard('Dashboard', LucideIcons.house, C.domHome),
+  health('Recovery', LucideIcons.heartPulse, C.domHealth),
   today('Sleep', LucideIcons.moon, C.domHome),
-  health('Health', LucideIcons.heartPulse, C.domHealth),
-  activity('Activity', LucideIcons.dumbbell, C.domMove),
+  activity('Strain', LucideIcons.zap, C.domMove),
   sleep('Salah', LucideIcons.moonStar, C.domSleep);
 
   const ShellDomain(this.label, this.icon, this.accent);
@@ -43,8 +43,8 @@ enum ShellDomain {
           ShellDomain.dashboard => null, // brand-neutral label, same everywhere
           ShellDomain.today => l?.tabSleep,
           ShellDomain.sleep => null, // 'Salah' is the same in every language
-          ShellDomain.activity => l?.tabActivity,
-          ShellDomain.health => l?.tabHealth,
+          ShellDomain.activity => null, // 'Strain'
+          ShellDomain.health => null, // 'Recovery'
         } ??
         label;
   }

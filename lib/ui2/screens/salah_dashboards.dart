@@ -478,7 +478,7 @@ class _ActivityState extends State<SalahActivityHome> with RevisionReload {
         padding: const EdgeInsets.fromLTRB(S.x4, S.x3, S.x4, S.x10),
         children: [
           DataRefresher(onChange: _load),
-          _title(p, 'Activity', 'How hard your body worked today'),
+          _title(p, 'Strain', 'How hard your body worked today'),
           const SizedBox(height: S.x4),
           if (_loading && d == null)
             const SizedBox(height: 200)
@@ -492,6 +492,8 @@ class _ActivityState extends State<SalahActivityHome> with RevisionReload {
                 note: strain == null
                     ? absentWhy(d?.strain, 'Builds as the day goes on')
                     : strainTargetText(d)),
+            const SizedBox(height: S.x3),
+            const DaysTrendCard(TrendKind.strain),
             const SizedBox(height: S.x3),
             Surface(
               child: Column(
@@ -530,8 +532,6 @@ class _ActivityState extends State<SalahActivityHome> with RevisionReload {
               _stat(p, 'Resting HR', _num(d?.rhr.value), 'bpm'),
             ),
           ],
-          const SizedBox(height: S.x3),
-          const DaysTrendCard(TrendKind.strain),
           const SizedBox(height: S.x4),
           _link(p, LucideIcons.activity, 'Workouts and heart rate zones',
               'Start a workout, see past ones', () => _open(c, const WorkoutScreen())),
@@ -783,7 +783,7 @@ class _HealthState extends State<SalahHealthHome> with RevisionReload {
         padding: const EdgeInsets.fromLTRB(S.x4, S.x3, S.x4, S.x10),
         children: [
           DataRefresher(onChange: _load),
-          _title(p, 'Health', 'How recovered your body is'),
+          _title(p, 'Recovery', 'How ready your body is today'),
           const SizedBox(height: S.x4),
           if (_loading && d == null)
             const SizedBox(height: 200)
@@ -806,6 +806,8 @@ class _HealthState extends State<SalahHealthHome> with RevisionReload {
                         'Needs 7 nights to learn your normal')
                     : null),
             const SizedBox(height: S.x3),
+            const DaysTrendCard(TrendKind.recovery),
+            const SizedBox(height: S.x3),
             _twoUp(
               _stat(p, 'Resting HR', _num(d?.rhr.value), 'bpm'),
               _stat(p, 'HRV', _num(_hrv), 'ms'),
@@ -820,8 +822,6 @@ class _HealthState extends State<SalahHealthHome> with RevisionReload {
             Text('Measured overnight. Scores are estimates, not medical advice.',
                 style: F.cap.copyWith(color: p.ink3)),
           ],
-          const SizedBox(height: S.x3),
-          const DaysTrendCard(TrendKind.recovery),
           const SizedBox(height: S.x4),
           _link(p, LucideIcons.heartPulse, 'More health detail',
               'Stress, blood oxygen, temperature, journal',
