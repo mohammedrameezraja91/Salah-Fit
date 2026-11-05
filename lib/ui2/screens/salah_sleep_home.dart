@@ -461,13 +461,17 @@ class _SalahSleepHomeState extends State<SalahSleepHome> with RevisionReload {
             ]),
           ),
         );
-    return Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      tile('Asleep', eff == null ? '—' : '${(eff * 100).round()}%', 'of time in bed'),
-      const SizedBox(width: S.x3),
-      tile('Wake-ups', wake == null ? '—' : '${wake.round()}', '5 min or more'),
-      const SizedBox(width: S.x3),
-      tile('Longest', longest == null ? '—' : _hm(longest.round()), 'unbroken'),
-    ]);
+    // IntrinsicHeight: `stretch` inside a ListView has unbounded height, which
+    // made this row (and every card below it) fail to lay out — a blank page.
+    return IntrinsicHeight(
+      child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        tile('Asleep', eff == null ? '—' : '${(eff * 100).round()}%', 'of time in bed'),
+        const SizedBox(width: S.x3),
+        tile('Wake-ups', wake == null ? '—' : '${wake.round()}', '5 min or more'),
+        const SizedBox(width: S.x3),
+        tile('Longest', longest == null ? '—' : _hm(longest.round()), 'unbroken'),
+      ]),
+    );
   }
 
   Widget _vitalsCard(BuildContext c, P p, _Night n, Map<String, dynamic> night) {

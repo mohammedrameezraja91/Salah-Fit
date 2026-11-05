@@ -357,13 +357,15 @@ Widget _stat(P p, String k, String v, String unit) => Surface(
       ]),
     );
 
-Widget _twoUp(Widget a, Widget b) => Row(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Expanded(child: a),
-        const SizedBox(width: S.x3),
-        Expanded(child: b),
-      ],
+Widget _twoUp(Widget a, Widget b) => IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(child: a),
+          const SizedBox(width: S.x3),
+          Expanded(child: b),
+        ],
+      ),
     );
 
 Widget _title(P p, String t, String sub) =>
