@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import '../revision.dart';
 import '../ui2.dart';
 import 'home_screen.dart' show repoOf;
-import 'salah_dashboards.dart' show recoveryColor;
+import 'salah_dashboards.dart' show recoveryColor, kSleepColor, kStrainColor;
 
 enum TrendKind { sleep, recovery, strain }
 
@@ -20,6 +20,12 @@ class _DaysTrendCardState extends State<DaysTrendCard> with RevisionReload {
   static const _days = 14;
   List<double?> _v = const []; // oldest → newest, one slot per calendar day
   bool _loaded = false;
+
+  Color get _accent => widget.kind == TrendKind.sleep
+      ? kSleepColor
+      : widget.kind == TrendKind.strain
+          ? kStrainColor
+          : const Color(0xFF16A34A);
 
   String get _key => switch (widget.kind) {
         TrendKind.sleep => 'sleep',
@@ -140,9 +146,8 @@ class _DaysTrendCardState extends State<DaysTrendCard> with RevisionReload {
                         : widget.kind == TrendKind.recovery
                             ? recoveryColor(_v[i]!)
                             : (i == _v.length - 1
-                            ? p.on(C.green)
-                            : p.wash(C.green, strength: 1)
-                                .withValues(alpha: .45)),
+                                ? _accent
+                                : _accent.withValues(alpha: .45)),
                     borderRadius: BorderRadius.circular(3),
                   ),
                 ),

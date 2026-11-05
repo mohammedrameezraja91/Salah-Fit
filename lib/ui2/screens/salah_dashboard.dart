@@ -14,7 +14,7 @@ import '../profile/profile.dart' show ProfileAvatar;
 import '../revision.dart';
 import '../ui2.dart';
 import 'home_screen.dart' show HomeData, envValue, repoOf;
-import 'salah_dashboards.dart' show BandStatusPill, DataRefresher, SyncStatusBar, absentWhy, recoveryColor, strainTargetText;
+import 'salah_dashboards.dart' show BandStatusPill, DataRefresher, SyncStatusBar, absentWhy, kSleepColor, kStrainColor, recoveryColor, strainTargetText;
 import 'sleep_detail.dart' show SleepData;
 
 class SalahDashboard extends StatefulWidget {
@@ -137,14 +137,15 @@ class _DashState extends State<SalahDashboard> with RevisionReload {
     ];
     final total = stages.fold<double>(
         0, (s, e) => s + (e.$2 == null ? 0 : e.$2!.toDouble()));
-    return _card(c, p, 'Sleep', LucideIcons.moon, ShellDomain.today,
+    return _card(c, p, 'Sleep', LucideIcons.moon, ShellDomain.today, accent: kSleepColor,
         child: !has
             ? Text('Last night is not in yet. It appears once your band has synced and the app has worked it out.',
                 style: F.cap.copyWith(color: p.ink2))
             : Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Row(children: [
                   _ring(p, ringV == null ? null : ringV / 100,
-                      ringV == null ? '—' : '${ringV.round()}%'),
+                      ringV == null ? '—' : '${ringV.round()}%',
+                      color: kSleepColor),
                   const SizedBox(width: S.x4),
                   Expanded(
                     child: Column(
@@ -230,11 +231,12 @@ class _DashState extends State<SalahDashboard> with RevisionReload {
     final steps = _home?.steps.value;
     final goal = _home?.stepGoal ?? 10000;
     final kcal = _home?.calories.value;
-    return _card(c, p, 'Strain', LucideIcons.zap, ShellDomain.activity,
+    return _card(c, p, 'Strain', LucideIcons.zap, ShellDomain.activity, accent: kStrainColor,
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
             _ring(p, strain == null ? null : strain.toDouble() / 21,
-                strain == null ? '—' : strain.toStringAsFixed(1)),
+                strain == null ? '—' : strain.toStringAsFixed(1),
+                color: kStrainColor),
             const SizedBox(width: S.x4),
             Expanded(
               child: Column(
@@ -284,13 +286,13 @@ class _DashState extends State<SalahDashboard> with RevisionReload {
   // ── pieces ────────────────────────────────────────────────────────────────
 
   Widget _card(BuildContext c, P p, String title, IconData icon, ShellDomain to,
-          {required Widget child}) =>
+          {required Widget child, Color? accent}) =>
       Surface(
         onTap: () => _go(to),
         pad: const EdgeInsets.all(S.x5),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            Icon(icon, size: 18, color: p.on(C.green)),
+            Icon(icon, size: 18, color: accent ?? p.on(C.green)),
             const SizedBox(width: S.x2),
             Expanded(
                 child: Text(title,

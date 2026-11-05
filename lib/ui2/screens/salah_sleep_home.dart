@@ -21,7 +21,7 @@ import '../revision.dart';
 import '../ui2.dart';
 import 'home_screen.dart' show envValue, repoOf;
 import 'naps.dart' show NapsData, NapsScreen;
-import 'salah_dashboards.dart' show DataRefresher, SyncStatusBar;
+import 'salah_dashboards.dart' show DataRefresher, SyncStatusBar, kSleepColor;
 import 'salah_trends.dart';
 import 'sleep_detail.dart' show SleepData, SleepDetail;
 import 'wellness_screen.dart' show WellnessScreen;
@@ -310,7 +310,7 @@ class _SalahSleepHomeState extends State<SalahSleepHome> with RevisionReload {
               painter: _Ring(
                   value: ringValue == null ? null : ringValue / 100,
                   track: p.track,
-                  color: p.on(C.green)),
+                  color: kSleepColor),
               child: Center(
                 child: Column(mainAxisSize: MainAxisSize.min, children: [
                   Text(ringValue == null ? '—' : '${ringValue.round()}%',

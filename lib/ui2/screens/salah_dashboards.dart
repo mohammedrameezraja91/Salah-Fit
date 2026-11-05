@@ -313,6 +313,9 @@ class _Ring extends CustomPainter {
       old.value != value || old.color != color || old.track != track;
 }
 
+const Color kSleepColor = Color(0xFF7C3AED);
+const Color kStrainColor = Color(0xFFEA580C);
+
 /// WHOOP-style recovery bands: green 67+, yellow 34–66, red 0–33.
 Color recoveryColor(num r) => r >= 67
     ? const Color(0xFF16A34A)
@@ -484,6 +487,7 @@ class _ActivityState extends State<SalahActivityHome> with RevisionReload {
             const SizedBox(height: 200)
           else ...[
             _ringCard(p,
+                color: kStrainColor,
                 fraction: strain == null ? null : strain.toDouble() / 21,
                 center: strain == null ? '—' : strain.toStringAsFixed(1),
                 sub: 'of 21',
