@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../revision.dart';
 import '../ui2.dart';
 import 'home_screen.dart' show repoOf;
+import 'salah_dashboards.dart' show recoveryColor;
 
 enum TrendKind { sleep, recovery, strain }
 
@@ -136,7 +137,9 @@ class _DaysTrendCardState extends State<DaysTrendCard> with RevisionReload {
                   decoration: BoxDecoration(
                     color: _v[i] == null
                         ? p.track
-                        : (i == _v.length - 1
+                        : widget.kind == TrendKind.recovery
+                            ? recoveryColor(_v[i]!)
+                            : (i == _v.length - 1
                             ? p.on(C.green)
                             : p.wash(C.green, strength: 1)
                                 .withValues(alpha: .45)),

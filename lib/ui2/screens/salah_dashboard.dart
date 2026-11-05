@@ -14,7 +14,7 @@ import '../profile/profile.dart' show ProfileAvatar;
 import '../revision.dart';
 import '../ui2.dart';
 import 'home_screen.dart' show HomeData, envValue, repoOf;
-import 'salah_dashboards.dart' show BandStatusPill, DataRefresher, SyncStatusBar, absentWhy;
+import 'salah_dashboards.dart' show BandStatusPill, DataRefresher, SyncStatusBar, absentWhy, recoveryColor, strainTargetText;
 import 'sleep_detail.dart' show SleepData;
 
 class SalahDashboard extends StatefulWidget {
@@ -191,7 +191,8 @@ class _DashState extends State<SalahDashboard> with RevisionReload {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
             _ring(p, rec == null ? null : rec.toDouble() / 100,
-                rec == null ? '—' : '${rec.round()}'),
+                rec == null ? '—' : '${rec.round()}',
+                color: rec == null ? null : recoveryColor(rec)),
             const SizedBox(width: S.x4),
             Expanded(
               child: Column(
@@ -243,7 +244,7 @@ class _DashState extends State<SalahDashboard> with RevisionReload {
                     Text(
                         strain == null
                             ? absentWhy(_home?.strain, 'Builds through the day')
-                            : 'out of 21',
+                            : (strainTargetText(_home) ?? 'out of 21'),
                         style: F.cap.copyWith(color: p.ink3)),
                   ]),
             ),
@@ -302,11 +303,11 @@ class _DashState extends State<SalahDashboard> with RevisionReload {
         ]),
       );
 
-  Widget _ring(P p, double? v, String label) => SizedBox(
+  Widget _ring(P p, double? v, String label, {Color? color}) => SizedBox(
         width: 76,
         height: 76,
         child: CustomPaint(
-          painter: _MiniRing(v, p.track, p.on(C.green)),
+          painter: _MiniRing(v, p.track, color ?? p.on(C.green)),
           child: Center(
               child: Text(label, style: F.head.copyWith(color: p.ink))),
         ),

@@ -313,8 +313,26 @@ class _Ring extends CustomPainter {
       old.value != value || old.color != color || old.track != track;
 }
 
+/// WHOOP-style recovery bands: green 67+, yellow 34–66, red 0–33.
+Color recoveryColor(num r) => r >= 67
+    ? const Color(0xFF16A34A)
+    : r >= 34
+        ? const Color(0xFFD97706)
+        : const Color(0xFFDC2626);
+
+/// Today's strain aim from the recovery-based target, e.g. "Target 11.4
+/// (10.5–12.3)". Null when no target has been worked out.
+String? strainTargetText(HomeData? d) {
+  final t = d?.strainTarget;
+  if (t == null || t['value'] is! num) return null;
+  String f(Object? x) => x is num ? x.toStringAsFixed(1) : '';
+  final lo = f(t['low']), hi = f(t['high']);
+  return 'Target ${f(t['value'])}${lo.isEmpty || hi.isEmpty ? '' : ' ($lo–$hi)'} for today';
+}
+
 Widget _ringCard(P p,
         {required double? fraction,
+        Color? color,
         required String center,
         required String sub,
         required String label,
@@ -327,7 +345,7 @@ Widget _ringCard(P p,
           height: 104,
           child: CustomPaint(
             painter: _Ring(
-                value: fraction, track: p.track, color: p.on(C.green)),
+                value: fraction, track: p.track, color: color ?? p.on(C.green)),
             child: Center(
               child: Column(mainAxisSize: MainAxisSize.min, children: [
                 Text(center, style: F.n24.copyWith(color: p.ink)),
@@ -473,7 +491,7 @@ class _ActivityState extends State<SalahActivityHome> with RevisionReload {
                 big: strain == null ? '—' : strain.toStringAsFixed(1),
                 note: strain == null
                     ? absentWhy(d?.strain, 'Builds as the day goes on')
-                    : null),
+                    : strainTargetText(d)),
             const SizedBox(height: S.x3),
             Surface(
               child: Column(
@@ -771,6 +789,7 @@ class _HealthState extends State<SalahHealthHome> with RevisionReload {
             const SizedBox(height: 200)
           else ...[
             _ringCard(p,
+                color: rec == null ? null : recoveryColor(rec),
                 fraction: rec == null ? null : rec.toDouble() / 100,
                 center: rec == null ? '—' : '${rec.round()}',
                 sub: 'recovery',
