@@ -22,6 +22,7 @@ import '../ui2.dart';
 import 'home_screen.dart' show envValue, repoOf;
 import 'naps.dart' show NapsData, NapsScreen;
 import 'salah_dashboards.dart' show DataRefresher, SyncStatusBar;
+import 'salah_trends.dart';
 import 'sleep_detail.dart' show SleepData, SleepDetail;
 import 'wellness_screen.dart' show WellnessScreen;
 import '../../state/app_state.dart';
@@ -161,6 +162,8 @@ class _SalahSleepHomeState extends State<SalahSleepHome> with RevisionReload {
             _napsCard(c, p, day),
           ],
           if (n != null) ...[
+            const SizedBox(height: S.x3),
+            const TrendCard(TrendKind.sleep),
             const SizedBox(height: S.x3),
             _planCard(c, p, n, day),
             const SizedBox(height: S.x3),

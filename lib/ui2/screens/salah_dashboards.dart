@@ -21,6 +21,7 @@ import '../revision.dart';
 import '../ui2.dart';
 import 'health_screen.dart' show HealthScreen;
 import 'home_screen.dart' show HomeData, repoOf;
+import 'salah_trends.dart';
 import 'sleep_detail.dart' show SleepData;
 import 'workout_screen.dart' show WorkoutScreen;
 
@@ -509,6 +510,8 @@ class _ActivityState extends State<SalahActivityHome> with RevisionReload {
               _stat(p, 'Resting HR', _num(d?.rhr.value), 'bpm'),
             ),
           ],
+          const SizedBox(height: S.x3),
+          const TrendCard(TrendKind.strain),
           const SizedBox(height: S.x4),
           _link(p, LucideIcons.activity, 'Workouts and heart rate zones',
               'Start a workout, see past ones', () => _open(c, const WorkoutScreen())),
@@ -796,6 +799,8 @@ class _HealthState extends State<SalahHealthHome> with RevisionReload {
             Text('Measured overnight. Scores are estimates, not medical advice.',
                 style: F.cap.copyWith(color: p.ink3)),
           ],
+          const SizedBox(height: S.x3),
+          const TrendCard(TrendKind.recovery),
           const SizedBox(height: S.x4),
           _link(p, LucideIcons.heartPulse, 'More health detail',
               'Stress, blood oxygen, temperature, journal',
