@@ -163,7 +163,7 @@ class _SalahSleepHomeState extends State<SalahSleepHome> with RevisionReload {
           ],
           if (n != null) ...[
             const SizedBox(height: S.x3),
-            const TrendCard(TrendKind.sleep),
+            const DaysTrendCard(TrendKind.sleep),
             const SizedBox(height: S.x3),
             _planCard(c, p, n, day),
             const SizedBox(height: S.x3),

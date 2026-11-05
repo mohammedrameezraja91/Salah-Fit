@@ -8,14 +8,14 @@ import 'home_screen.dart' show repoOf;
 
 enum TrendKind { sleep, recovery, strain }
 
-class TrendCard extends StatefulWidget {
+class DaysTrendCard extends StatefulWidget {
   final TrendKind kind;
-  const TrendCard(this.kind, {super.key});
+  const DaysTrendCard(this.kind, {super.key});
   @override
-  State<TrendCard> createState() => _TrendCardState();
+  State<DaysTrendCard> createState() => _DaysTrendCardState();
 }
 
-class _TrendCardState extends State<TrendCard> with RevisionReload {
+class _DaysTrendCardState extends State<DaysTrendCard> with RevisionReload {
   static const _days = 14;
   List<double?> _v = const []; // oldest → newest, one slot per calendar day
   bool _loaded = false;
@@ -35,7 +35,7 @@ class _TrendCardState extends State<TrendCard> with RevisionReload {
   @override
   void reload() async {
     final repo = repoOf(context);
-    final t = beginRead(#trend${widget.kind.name});
+    final t = beginRead("trend${widget.kind.name}");
     if (repo == null) return;
     try {
       final chart = await repo.getChart(_key);
@@ -53,7 +53,7 @@ class _TrendCardState extends State<TrendCard> with RevisionReload {
         final d = DateTime(now.year, now.month, now.day - i);
         out.add(byDay['${d.year}-${d.month}-${d.day}']);
       }
-      if (!stillNewest(#trend${widget.kind.name}, t)) return;
+      if (!stillNewest("trend${widget.kind.name}", t)) return;
       setState(() {
         _v = out;
         _loaded = true;
